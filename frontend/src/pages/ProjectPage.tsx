@@ -13,6 +13,8 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import BookIcon from '@mui/icons-material/Book';
+import ViewModuleIcon from '@mui/icons-material/ViewModule';
+import VerifiedIcon from '@mui/icons-material/Verified';
 import { projectAPI, Project } from '../services/storyBibleService';
 
 const ProjectPage: React.FC = () => {
@@ -72,8 +74,24 @@ const ProjectPage: React.FC = () => {
             startIcon={<BookIcon />}
             variant="outlined"
             onClick={() => navigate(`/project/${id}/story-bible`)}
+            sx={{ mr: 1 }}
           >
             Story Bible
+          </Button>
+          <Button
+            startIcon={<ViewModuleIcon />}
+            variant="outlined"
+            onClick={() => navigate(`/project/${id}/planning`)}
+            sx={{ mr: 1 }}
+          >
+            Planning
+          </Button>
+          <Button
+            startIcon={<VerifiedIcon />}
+            variant="outlined"
+            onClick={() => navigate(`/project/${id}/continuity`)}
+          >
+            Continuity
           </Button>
         </Toolbar>
       </AppBar>
