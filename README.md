@@ -1,40 +1,118 @@
-# Lit-Rift
+# Lit-Rift: AI-Powered Novel Creation App
+
 Web-based novel creation app with React/Python, Firestore DB, and Gemini AI integration.
 
-# Novel Generation App
+## Features
 
-AI-powered writing companion for seamless novel creation. Story Bible-centric platform with context-aware AI text generation, visual planning, continuity tracking, and multi-format asset creation.
+### Core System
+- **Story Bible/Codex**: Central database tracking all story elements (characters, locations, lore, plot). Single source of truth for AI context.
 
-## Core Features
+### Priority Features
+1. **Context-Aware Editor**: AI text generation (scenes, dialogue, descriptions) pulls directly from Story Bible for continuity. Custom prompts, tone control, rewriting assistance.
 
-- **Story Bible/Codex** - Centralized database for characters, locations, lore, plot elements
-- **Context-Aware Editor** - AI-assisted drafting pulling live from Story Bible for consistency
-- **Visual Planning** - Corkboard, Matrix/Grid, and outline views with Story Bible linking
-- **AI Continuity Tracker** - Passive inconsistency detection across manuscript and story elements
-- **Inspiration Spark** - Break writer's block with AI-generated prompts from images/text/audio
-- **Asset Generation** - Create character images and convert text to audiobook with voice options
-- **Multi-Format Export** - PDF, print-ready, .epub, .mobi, audio
+2. **Visual Planning**: Canvas with multiple views: Corkboard (free-form), Matrix/Grid (structured), standard outlines. All elements link to Story Bible.
 
-## Tech Stack
+3. **AI Continuity Tracker**: Passive agent scans manuscript and Story Bible, flags inconsistencies non-intrusively (character details, location logic, timeline errors).
 
-- **Frontend:** React/Svelte
-- **Backend:** Python/Node.js
-- **Database:** Firestore (real-time, document-based)
-- **AI:** Gemini API (modular text, image, audio)
+4. **Inspiration Spark**: Input: image/text/audio. Output: AI-generated ideas, prompts, "what if" scenarios for writer's block.
 
-## Philosophy
+5. **Asset Generation**: Images (HD/anime) from Story Bible descriptions. Text-to-speech audiobook with voice options/cloning.
 
-Distraction-free creative partner. The Story Bible ↔ AI editor integration is the foundation. Designed to support flow-state writing with intelligent, non-intrusive assistance.
+6. **Multi-Format Export**: PDF, print, .epub, .mobi, audio.
+
+## Architecture
+
+- **Frontend**: React with modern UI components
+- **Backend**: Python with Flask
+- **Database**: Firestore (real-time, document-based)
+- **AI**: Modular Gemini API integration (text, image, audio)
+
+## Project Structure
+
+```
+lit-rift/
+├── frontend/           # React frontend application
+│   ├── src/
+│   │   ├── components/  # React components
+│   │   ├── pages/       # Page components
+│   │   ├── services/    # API services
+│   │   ├── contexts/    # React contexts
+│   │   └── utils/       # Utility functions
+│   └── public/
+├── backend/            # Python backend
+│   ├── app.py          # Main application
+│   ├── routes/         # API routes
+│   ├── services/       # Business logic
+│   ├── models/         # Data models
+│   └── utils/          # Utility functions
+└── docs/              # Documentation
+```
+
+## Setup Instructions
+
+### Prerequisites
+- Node.js (v16+)
+- Python (v3.9+)
+- Firebase account with Firestore enabled
+- Google Cloud account with Gemini API access
+
+### Environment Variables
+
+Create `.env` files in both frontend and backend directories:
+
+**Backend `.env`:**
+```
+GOOGLE_API_KEY=your_gemini_api_key
+FIREBASE_CONFIG=your_firebase_config_json
+FLASK_ENV=development
+PORT=5000
+```
+
+**Frontend `.env`:**
+```
+REACT_APP_API_URL=http://localhost:5000
+REACT_APP_FIREBASE_CONFIG=your_firebase_config
+```
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/sorrowscry86/Lit-Rift.git
+cd Lit-Rift
+```
+
+2. Install dependencies:
+```bash
+npm run install:all
+```
+
+### Running the Application
+
+1. Start the backend server:
+```bash
+npm run dev:backend
+```
+
+2. In a new terminal, start the frontend:
+```bash
+npm run dev:frontend
+```
+
+3. Open your browser to `http://localhost:3000`
 
 ## Development Priority
 
-1. Story Bible architecture
-2. Context-aware text editor
-3. Visual planning tools
-4. Continuity tracking
-5. Inspiration & asset generation
-6. Export pipeline
+1. Story Bible → Context-Aware Editor
+2. Visual Planning
+3. Continuity Tracker
+4. Inspiration/Assets
+5. Export
 
-## Getting Started
+## UX Philosophy
 
-[Installation & setup instructions coming soon]
+Seamless, distraction-free, modular. The app acts as a supportive co-writer, not a complex tool. The Story Bible ↔ AI text generation link is critical for maintaining narrative consistency.
+
+## License
+
+See LICENSE file for details.
