@@ -15,7 +15,8 @@ try:
     db = firestore.client()
     planning_service = VisualPlanningService(db)
     story_bible_service = StoryBibleService(db)
-except:
+except Exception as e:
+    print(f"Warning: Failed to initialize Firestore client: {e}")
     db = None
     planning_service = VisualPlanningService(None)
     story_bible_service = StoryBibleService(None)

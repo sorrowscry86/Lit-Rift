@@ -13,8 +13,8 @@ class AIEditorService:
         self.model = None
         try:
             self.model = genai.GenerativeModel('gemini-pro')
-        except:
-            print("Warning: Gemini model not initialized")
+        except Exception as e:
+            print(f"Warning: Gemini model not initialized: {e}")
     
     def _build_context_prompt(self, context: Dict, request_type: str) -> str:
         """Build a context-aware prompt from Story Bible data"""
@@ -26,38 +26,39 @@ class AIEditorService:
             prompt_parts.append(f"Story: {project.get('title', 'Untitled')}")
             prompt_parts.append(f"Genre: {project.get('genre', 'Unknown')}")
             if project.get('description'):
-                prompt_parts.append(f"Summary: {project['description']}")
+                prompt_parts.append(f"Summary: {project.get('description')}")
         
         # Add character context
         if context.get('characters'):
             prompt_parts.append("\nCharacters:")
             for char in context['characters']:
-                char_info = f"- {char['name']}: {char['description']}"
+                char_info = f"- {char.get('name', 'Unknown')}: {char.get('description', '')}"
                 if char.get('traits'):
-                    char_info += f" Traits: {', '.join(char['traits'])}"
+                    char_info += f" Traits: {', '.join(char.get('traits', []))}"
                 prompt_parts.append(char_info)
         
         # Add location context
         if context.get('location'):
             loc = context['location']
-            prompt_parts.append(f"\nLocation: {loc['name']}")
-            prompt_parts.append(f"Description: {loc['description']}")
+            prompt_parts.append(f"\nLocation: {loc.get('name', 'Unknown')}")
+            prompt_parts.append(f"Description: {loc.get('description', '')}")
         
         # Add plot context
         if context.get('plot_points'):
             prompt_parts.append("\nPlot Points:")
             for pp in context['plot_points']:
-                prompt_parts.append(f"- {pp['title']}: {pp['description']}")
+                prompt_parts.append(f"- {pp.get('title', '')}: {pp.get('description', '')}")
         
         # Add lore context
         if context.get('related_lore'):
             prompt_parts.append("\nRelevant Lore:")
             for lore in context['related_lore']:
-                prompt_parts.append(f"- {lore['title']}: {lore['content'][:200]}...")
+                content = lore.get('content', '')[:200]
+                prompt_parts.append(f"- {lore.get('title', '')}: {content}...")
         
         # Add existing scene content
         if context.get('scene') and context['scene'].get('content'):
-            prompt_parts.append(f"\nExisting scene content:\n{context['scene']['content']}")
+            prompt_parts.append(f"\nExisting scene content:\n{context['scene'].get('content', '')}")
         
         return "\n".join(prompt_parts)
     

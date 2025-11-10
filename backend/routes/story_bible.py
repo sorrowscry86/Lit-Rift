@@ -13,7 +13,8 @@ bp = Blueprint('story_bible', __name__)
 try:
     db = firestore.client()
     story_bible_service = StoryBibleService(db)
-except:
+except Exception as e:
+    print(f"Warning: Failed to initialize Firestore client: {e}")
     db = None
     story_bible_service = StoryBibleService(None)
 

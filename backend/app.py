@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -18,7 +19,6 @@ try:
         # Use environment variable or default credentials
         firebase_config = os.getenv('FIREBASE_CONFIG')
         if firebase_config:
-            import json
             cred = credentials.Certificate(json.loads(firebase_config))
             firebase_admin.initialize_app(cred)
             db = firestore.client()

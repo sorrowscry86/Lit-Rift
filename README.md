@@ -23,7 +23,7 @@ Web-based novel creation app with React/Python, Firestore DB, and Gemini AI inte
 ## Architecture
 
 - **Frontend**: React with modern UI components
-- **Backend**: Python with Flask/FastAPI
+- **Backend**: Python with Flask
 - **Database**: Firestore (real-time, document-based)
 - **AI**: Modular Gemini API integration (text, image, audio)
 
