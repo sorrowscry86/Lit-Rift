@@ -1,0 +1,27 @@
+{
+  "name": "lit-rift",
+  "version": "1.0.0",
+  "description": "Web-based novel creation app with React/Python, Firestore DB, and Gemini AI integration",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && pip install -r requirements.txt",
+    "dev:frontend": "cd frontend && npm start",
+    "dev:backend": "cd backend && python app.py",
+    "build:frontend": "cd frontend && npm run build",
+    "test:frontend": "cd frontend && npm test",
+    "test:backend": "cd backend && pytest"
+  },
+  "keywords": [
+    "novel",
+    "writing",
+    "ai",
+    "gemini",
+    "firestore"
+  ],
+  "author": "",
+  "license": "ISC"
+}
