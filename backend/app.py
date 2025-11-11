@@ -45,9 +45,10 @@ else:
     print("Warning: GOOGLE_API_KEY not set. AI features will be limited.")
 
 # Import routes
-from routes import story_bible, editor, visual_planning, continuity, inspiration, assets, export_routes
+from routes import story_bible, editor, visual_planning, continuity, inspiration, assets, export_routes, auth
 
 # Register blueprints
+app.register_blueprint(auth.bp, url_prefix='/api/auth')
 app.register_blueprint(story_bible.bp, url_prefix='/api/story-bible')
 app.register_blueprint(editor.bp, url_prefix='/api/editor')
 app.register_blueprint(visual_planning.bp, url_prefix='/api/planning')
