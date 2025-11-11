@@ -1,7 +1,31 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
-  "private": true,
+  "name": "@lit-rift/frontend",
+  "version": "1.0.0",
+  "description": "AI-powered novel creation platform - Frontend application",
+  "author": "Lit-Rift Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sorrowscry86/Lit-Rift.git",
+    "directory": "frontend"
+  },
+  "bugs": {
+    "url": "https://github.com/sorrowscry86/Lit-Rift/issues"
+  },
+  "homepage": "https://github.com/sorrowscry86/Lit-Rift#readme",
+  "keywords": [
+    "writing",
+    "ai",
+    "novel",
+    "creative-writing",
+    "story-bible",
+    "react",
+    "typescript"
+  ],
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
