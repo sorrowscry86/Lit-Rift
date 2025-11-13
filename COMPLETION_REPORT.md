@@ -360,7 +360,7 @@ lit-rift/
 | **Testing** | ~1,800 | 9 | ✅ >90% backend |
 | Backend tests | 1,300 | 6 | ✅ Complete |
 | Frontend tests | 500 | 3 | ✅ Complete |
-| **Total Project** | **~15,000** | **92** | ✅ **PRODUCTION READY** |
+| **Total Project** | **~12,409** | **92** | ✅ **PRODUCTION READY** |
 
 ---
 
