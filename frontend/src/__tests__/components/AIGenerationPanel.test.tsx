@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { AIGenerationPanel } from '../../components/Editor/AIGenerationPanel';
+import AIGenerationPanel from '../../components/Editor/AIGenerationPanel';
 
 describe('AIGenerationPanel Component', () => {
   const mockOnGenerate = jest.fn();

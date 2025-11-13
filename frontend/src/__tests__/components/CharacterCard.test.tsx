@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { CharacterCard } from '../../components/StoryBible/CharacterCard';
+import CharacterCard from '../../components/StoryBible/CharacterCard';
 
 describe('CharacterCard Component', () => {
   const mockCharacter = {
