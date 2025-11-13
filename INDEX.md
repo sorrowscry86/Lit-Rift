@@ -327,7 +327,7 @@ docker-compose build
 
 **Current Version**: 1.0.0
 **Status**: Production Ready (95% complete)
-**Test Coverage**: >90% backend, ~60% frontend
+**Test Coverage**: >90% backend, ~60% frontend (target >80%)
 **Documentation**: 4,485 lines across 17 files
 **Code**: 7,924 lines (Python + TypeScript)
 
