@@ -7,6 +7,8 @@ from flask import Blueprint, request, jsonify
 from services.continuity_tracker_service import ContinuityTrackerService
 from services.story_bible_service import StoryBibleService
 from firebase_admin import firestore
+from utils.auth import require_project_access
+from utils.rate_limiter import ai_rate_limit
 
 bp = Blueprint('continuity', __name__)
 
@@ -22,13 +24,16 @@ except Exception as e:
     story_bible_service = StoryBibleService(None)
 
 @bp.route('/check/<project_id>', methods=['POST'])
-def check_continuity(project_id):
+@require_project_access
+@ai_rate_limit
+def check_continuity(current_user, project_id):
     """Check for continuity issues in the manuscript"""
     result = continuity_service.perform_full_check(project_id, story_bible_service)
     return jsonify(result)
 
 @bp.route('/issues/<project_id>', methods=['GET'])
-def get_issues(project_id):
+@require_project_access
+def get_issues(current_user, project_id):
     """Get list of continuity issues"""
     issues = continuity_service.get_issues(project_id)
     return jsonify({
@@ -38,7 +43,8 @@ def get_issues(project_id):
     })
 
 @bp.route('/resolve/<project_id>/<issue_id>', methods=['POST'])
-def resolve_issue(project_id, issue_id):
+@require_project_access
+def resolve_issue(current_user, project_id, issue_id):
     """Mark a continuity issue as resolved"""
     success = continuity_service.resolve_issue(project_id, issue_id)
     if success:

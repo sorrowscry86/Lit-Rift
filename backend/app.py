@@ -9,8 +9,27 @@ import google.generativeai as genai
 
 load_dotenv()
 
+def validate_config():
+    """Validate required environment variables at startup"""
+    required = ['GOOGLE_API_KEY', 'FIREBASE_CONFIG']
+    missing = []
+
+    for key in required:
+        value = os.getenv(key)
+        if not value:
+            missing.append(key)
+
+    if missing and os.getenv('FLASK_ENV') != 'development':
+        print(f"Warning: Missing required environment variables in production: {', '.join(missing)}")
+        print("Application may not function correctly without these variables.")
+
+    return len(missing) == 0
+
 app = Flask(__name__)
 CORS(app)
+
+# Validate configuration
+validate_config()
 
 # Initialize Firebase
 db = None
@@ -56,6 +75,15 @@ app.register_blueprint(continuity.bp, url_prefix='/api/continuity')
 app.register_blueprint(inspiration.bp, url_prefix='/api/inspiration')
 app.register_blueprint(assets.bp, url_prefix='/api/assets')
 app.register_blueprint(export_routes.bp, url_prefix='/api/export')
+
+@app.after_request
+def set_security_headers(response):
+    """Add security headers to all responses"""
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
 
 @app.route('/')
 def home():
