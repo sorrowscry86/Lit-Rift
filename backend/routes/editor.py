@@ -7,6 +7,17 @@ from flask import Blueprint, request, jsonify
 from services.ai_editor_service import AIEditorService
 from services.story_bible_service import StoryBibleService
 from firebase_admin import firestore
+from utils.rate_limiter import ai_rate_limit
+from utils.auth import require_auth
+from utils.validation import validate_request
+from schemas.editor_schemas import (
+    GenerateSceneRequest,
+    GenerateDialogueRequest,
+    RewriteTextRequest,
+    ExpandTextRequest,
+    SummarizeTextRequest,
+    ContinueWritingRequest
+)
 
 bp = Blueprint('editor', __name__)
 
@@ -22,14 +33,17 @@ except Exception as e:
     story_bible_service = StoryBibleService(None)
 
 @bp.route('/generate-scene', methods=['POST'])
-def generate_scene():
+@require_auth
+@ai_rate_limit
+@validate_request(GenerateSceneRequest)
+def generate_scene(current_user):
     """Generate a new scene with AI"""
-    data = request.json
-    project_id = data.get('project_id')
-    scene_id = data.get('scene_id')
-    prompt = data.get('prompt', '')
-    tone = data.get('tone', 'neutral')
-    length = data.get('length', 'medium')
+    data = request.validated_data
+    project_id = data.project_id
+    scene_id = data.scene_id
+    prompt = data.prompt
+    tone = data.tone
+    length = data.length
     
     # Get Story Bible context
     context = {}
@@ -40,98 +54,113 @@ def generate_scene():
         project = story_bible_service.get_project(project_id)
         if project:
             context['project'] = project
-    
+
     # Add any additional context from request
-    if data.get('characters'):
+    if data.characters:
         context['characters'] = [
             story_bible_service.get_character(project_id, char_id)
-            for char_id in data['characters']
+            for char_id in data.characters
         ]
-    
-    if data.get('location_id'):
+
+    if data.location_id:
         context['location'] = story_bible_service.get_location(
-            project_id, data['location_id']
+            project_id, data.location_id
         )
     
     result = ai_editor_service.generate_scene(context, prompt, tone, length)
     return jsonify(result)
 
 @bp.route('/generate-dialogue', methods=['POST'])
-def generate_dialogue():
+@require_auth
+@ai_rate_limit
+@validate_request(GenerateDialogueRequest)
+def generate_dialogue(current_user):
     """Generate dialogue between characters"""
-    data = request.json
-    project_id = data.get('project_id')
-    character_names = data.get('characters', [])
-    situation = data.get('situation', '')
-    
+    data = request.validated_data
+    project_id = data.project_id
+    character_names = data.characters
+    situation = data.situation
+
     # Get Story Bible context
     context = {'project': story_bible_service.get_project(project_id)}
-    
+
     # Get character details
     all_characters = story_bible_service.list_characters(project_id)
     context['characters'] = [
-        char for char in all_characters 
+        char for char in all_characters
         if char['name'] in character_names
     ]
-    
+
     result = ai_editor_service.generate_dialogue(
         context, character_names, situation
     )
     return jsonify(result)
 
 @bp.route('/rewrite', methods=['POST'])
-def rewrite_text():
+@require_auth
+@ai_rate_limit
+@validate_request(RewriteTextRequest)
+def rewrite_text(current_user):
     """Rewrite text with specific instructions"""
-    data = request.json
-    text = data.get('text', '')
-    instruction = data.get('instruction', '')
-    project_id = data.get('project_id')
-    
+    data = request.validated_data
+    text = data.text
+    instruction = data.instruction
+    project_id = data.project_id
+
     context = None
     if project_id:
         context = {'project': story_bible_service.get_project(project_id)}
-    
+
     result = ai_editor_service.rewrite_text(text, instruction, context)
     return jsonify(result)
 
 @bp.route('/expand', methods=['POST'])
-def expand_text():
+@require_auth
+@ai_rate_limit
+@validate_request(ExpandTextRequest)
+def expand_text(current_user):
     """Expand text with more detail"""
-    data = request.json
-    text = data.get('text', '')
-    project_id = data.get('project_id')
-    
+    data = request.validated_data
+    text = data.text
+    project_id = data.project_id
+
     context = None
     if project_id:
         context = {'project': story_bible_service.get_project(project_id)}
-    
+
     result = ai_editor_service.expand_text(text, context)
     return jsonify(result)
 
 @bp.route('/summarize', methods=['POST'])
-def summarize_text():
+@require_auth
+@ai_rate_limit
+@validate_request(SummarizeTextRequest)
+def summarize_text(current_user):
     """Summarize text"""
-    data = request.json
-    text = data.get('text', '')
-    
+    data = request.validated_data
+    text = data.text
+
     result = ai_editor_service.summarize_text(text)
     return jsonify(result)
 
 @bp.route('/continue', methods=['POST'])
-def continue_writing():
+@require_auth
+@ai_rate_limit
+@validate_request(ContinueWritingRequest)
+def continue_writing(current_user):
     """Continue writing from existing text"""
-    data = request.json
-    text = data.get('text', '')
-    direction = data.get('direction', '')
-    project_id = data.get('project_id')
-    scene_id = data.get('scene_id')
-    
+    data = request.validated_data
+    text = data.text
+    direction = data.direction or ''
+    project_id = data.project_id
+    scene_id = data.scene_id
+
     # Get context
     context = {}
     if scene_id:
         context = story_bible_service.get_context_for_scene(project_id, scene_id)
     elif project_id:
         context = {'project': story_bible_service.get_project(project_id)}
-    
+
     result = ai_editor_service.continue_writing(text, context, direction)
     return jsonify(result)

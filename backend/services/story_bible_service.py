@@ -299,7 +299,7 @@ class StoryBibleService:
         scene = self.get_scene(project_id, scene_id)
         if not scene:
             return {}
-        
+
         context = {
             'scene': scene,
             'characters': [],
@@ -307,33 +307,40 @@ class StoryBibleService:
             'plot_points': [],
             'related_lore': []
         }
-        
-        # Get characters
-        for char_id in scene.get('characters', []):
-            char = self.get_character(project_id, char_id)
-            if char:
-                context['characters'].append(char)
-        
-        # Get location
+
+        # Fetch all data upfront to minimize database roundtrips
+        all_characters = self.list_characters(project_id)
+        all_plot_points = self.list_plot_points(project_id)
+        all_lore = self.list_lore(project_id)
+
+        # Build character ID set from scene for fast lookups
+        scene_char_ids = set(scene.get('characters', []))
+        scene_plot_ids = set(scene.get('plot_points', []))
         location_id = scene.get('location_id')
+
+        # Filter characters efficiently
+        context['characters'] = [
+            char for char in all_characters
+            if char['id'] in scene_char_ids
+        ]
+
+        # Get location (single query)
         if location_id:
             context['location'] = self.get_location(project_id, location_id)
-        
-        # Get plot points
-        all_plot_points = self.list_plot_points(project_id)
+
+        # Filter plot points efficiently
         context['plot_points'] = [
-            pp for pp in all_plot_points 
-            if pp['id'] in scene.get('plot_points', [])
+            pp for pp in all_plot_points
+            if pp['id'] in scene_plot_ids
         ]
-        
-        # Get related lore
-        all_lore = self.list_lore(project_id)
+
+        # Filter related lore efficiently
         # Simple relevance: lore that mentions any character or location in scene
         context['related_lore'] = [
             lore for lore in all_lore
-            if any(char_id in lore.get('related_characters', []) 
-                   for char_id in scene.get('characters', []))
-            or location_id in lore.get('related_locations', [])
+            if (any(char_id in lore.get('related_characters', [])
+                   for char_id in scene_char_ids)
+                or location_id in lore.get('related_locations', []))
         ]
-        
+
         return context
