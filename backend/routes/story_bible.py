@@ -7,6 +7,18 @@ from flask import Blueprint, request, jsonify
 from services.story_bible_service import StoryBibleService
 from firebase_admin import firestore
 from utils.auth import require_auth, require_project_access
+from utils.validation import validate_request
+from schemas.story_bible_schemas import (
+    CreateProjectRequest,
+    CreateCharacterRequest,
+    UpdateCharacterRequest,
+    CreateLocationRequest,
+    UpdateLocationRequest,
+    CreateLoreRequest,
+    CreatePlotPointRequest,
+    CreateSceneRequest,
+    UpdateSceneRequest
+)
 
 bp = Blueprint('story_bible', __name__)
 
@@ -29,9 +41,10 @@ def list_projects(current_user):
 
 @bp.route('/projects', methods=['POST'])
 @require_auth
+@validate_request(CreateProjectRequest)
 def create_project(current_user):
     """Create a new project"""
-    data = request.json
+    data = request.validated_data.model_dump()
     project = story_bible_service.create_project(data)
     return jsonify(project), 201
 
@@ -54,9 +67,10 @@ def list_characters(current_user, project_id):
 
 @bp.route('/projects/<project_id>/characters', methods=['POST'])
 @require_project_access
+@validate_request(CreateCharacterRequest)
 def create_character(current_user, project_id):
     """Create a new character"""
-    data = request.json
+    data = request.validated_data.model_dump()
     character = story_bible_service.create_character(project_id, data)
     return jsonify(character), 201
 
@@ -71,9 +85,10 @@ def get_character(current_user, project_id, character_id):
 
 @bp.route('/projects/<project_id>/characters/<character_id>', methods=['PUT'])
 @require_project_access
+@validate_request(UpdateCharacterRequest)
 def update_character(current_user, project_id, character_id):
     """Update a character"""
-    data = request.json
+    data = request.validated_data.model_dump(exclude_unset=True)
     character = story_bible_service.update_character(project_id, character_id, data)
     return jsonify(character)
 
@@ -96,9 +111,10 @@ def list_locations(current_user, project_id):
 
 @bp.route('/projects/<project_id>/locations', methods=['POST'])
 @require_project_access
+@validate_request(CreateLocationRequest)
 def create_location(current_user, project_id):
     """Create a new location"""
-    data = request.json
+    data = request.validated_data.model_dump()
     location = story_bible_service.create_location(project_id, data)
     return jsonify(location), 201
 
@@ -113,9 +129,10 @@ def get_location(current_user, project_id, location_id):
 
 @bp.route('/projects/<project_id>/locations/<location_id>', methods=['PUT'])
 @require_project_access
+@validate_request(UpdateLocationRequest)
 def update_location(current_user, project_id, location_id):
     """Update a location"""
-    data = request.json
+    data = request.validated_data.model_dump(exclude_unset=True)
     location = story_bible_service.update_location(project_id, location_id, data)
     return jsonify(location)
 
@@ -129,9 +146,10 @@ def list_lore(current_user, project_id):
 
 @bp.route('/projects/<project_id>/lore', methods=['POST'])
 @require_project_access
+@validate_request(CreateLoreRequest)
 def create_lore(current_user, project_id):
     """Create a new lore entry"""
-    data = request.json
+    data = request.validated_data.model_dump()
     lore = story_bible_service.create_lore(project_id, data)
     return jsonify(lore), 201
 
@@ -145,9 +163,10 @@ def list_plot_points(current_user, project_id):
 
 @bp.route('/projects/<project_id>/plot-points', methods=['POST'])
 @require_project_access
+@validate_request(CreatePlotPointRequest)
 def create_plot_point(current_user, project_id):
     """Create a new plot point"""
-    data = request.json
+    data = request.validated_data.model_dump()
     plot_point = story_bible_service.create_plot_point(project_id, data)
     return jsonify(plot_point), 201
 
@@ -161,9 +180,10 @@ def list_scenes(current_user, project_id):
 
 @bp.route('/projects/<project_id>/scenes', methods=['POST'])
 @require_project_access
+@validate_request(CreateSceneRequest)
 def create_scene(current_user, project_id):
     """Create a new scene"""
-    data = request.json
+    data = request.validated_data.model_dump()
     scene = story_bible_service.create_scene(project_id, data)
     return jsonify(scene), 201
 
@@ -178,9 +198,10 @@ def get_scene(current_user, project_id, scene_id):
 
 @bp.route('/projects/<project_id>/scenes/<scene_id>', methods=['PUT'])
 @require_project_access
+@validate_request(UpdateSceneRequest)
 def update_scene(current_user, project_id, scene_id):
     """Update a scene"""
-    data = request.json
+    data = request.validated_data.model_dump(exclude_unset=True)
     scene = story_bible_service.update_scene(project_id, scene_id, data)
     return jsonify(scene)
 
