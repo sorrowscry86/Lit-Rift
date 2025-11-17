@@ -12,7 +12,6 @@ import {
   Box,
 } from '@mui/material';
 import {
-  AccountCircle,
   Logout,
   Settings,
 } from '@mui/icons-material';
