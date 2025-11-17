@@ -180,6 +180,9 @@ export default function LoginPage() {
             </Button>
 
             <Box sx={{ textAlign: 'center', mt: 2 }}>
+              <Link component={RouterLink} to="/reset-password" variant="body2" sx={{ display: 'block', mb: 1 }}>
+                Forgot password?
+              </Link>
               <Link component={RouterLink} to="/signup" variant="body2">
                 Don't have an account? Sign Up
               </Link>

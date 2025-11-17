@@ -7,6 +7,7 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
+  sendEmailVerification,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
@@ -45,7 +46,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Sign up with email and password
   const signup = async (email: string, password: string) => {
-    await createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    // Send email verification after signup
+    if (userCredential.user) {
+      try {
+        await sendEmailVerification(userCredential.user);
+      } catch (error) {
+        console.error('Error sending verification email:', error);
+        // Don't fail signup if verification email fails
+      }
+    }
   };
 
   // Login with Google

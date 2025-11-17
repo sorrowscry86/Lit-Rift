@@ -18,6 +18,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import { projectAPI, Project } from '../services/storyBibleService';
 import UserMenu from '../components/UserMenu';
+import EmailVerificationBanner from '../components/EmailVerificationBanner';
 
 const HomePage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -77,6 +78,8 @@ const HomePage: React.FC = () => {
         <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
           AI-Powered Novel Creation
         </Typography>
+
+        <EmailVerificationBanner />
 
         <Grid container spacing={3}>
           {projects.map((project) => (

@@ -14,6 +14,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import PasswordResetPage from './pages/PasswordResetPage';
 import ProjectPage from './pages/ProjectPage';
 import EditorPage from './pages/EditorPage';
 import StoryBiblePage from './pages/StoryBiblePage';
@@ -49,6 +50,7 @@ function App() {
             {/* Public routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/reset-password" element={<PasswordResetPage />} />
 
             {/* Protected routes - require authentication */}
             <Route
