@@ -7,8 +7,13 @@ import './App.css';
 // Contexts
 import { AuthProvider } from './contexts/AuthContext';
 
+// Components
+import ProtectedRoute from './components/ProtectedRoute';
+
 // Pages
 import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
 import ProjectPage from './pages/ProjectPage';
 import EditorPage from './pages/EditorPage';
 import StoryBiblePage from './pages/StoryBiblePage';
@@ -41,12 +46,59 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/project/:id" element={<ProjectPage />} />
-            <Route path="/project/:id/editor" element={<EditorPage />} />
-            <Route path="/project/:id/story-bible" element={<StoryBiblePage />} />
-            <Route path="/project/:projectId/planning" element={<VisualPlanningPage />} />
-            <Route path="/project/:projectId/continuity" element={<ContinuityPage />} />
+            {/* Public routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+
+            {/* Protected routes - require authentication */}
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <HomePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/project/:id"
+              element={
+                <ProtectedRoute>
+                  <ProjectPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/project/:id/editor"
+              element={
+                <ProtectedRoute>
+                  <EditorPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/project/:id/story-bible"
+              element={
+                <ProtectedRoute>
+                  <StoryBiblePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/project/:projectId/planning"
+              element={
+                <ProtectedRoute>
+                  <VisualPlanningPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/project/:projectId/continuity"
+              element={
+                <ProtectedRoute>
+                  <ContinuityPage />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </Router>
       </AuthProvider>

@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { projectAPI, Project } from '../services/storyBibleService';
+import UserMenu from '../components/UserMenu';
 
 const HomePage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -61,13 +62,16 @@ const HomePage: React.FC = () => {
           <Typography variant="h3" component="h1" fontWeight="bold">
             Lit-Rift
           </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setOpenDialog(true)}
-          >
-            New Project
-          </Button>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setOpenDialog(true)}
+            >
+              New Project
+            </Button>
+            <UserMenu />
+          </Box>
         </Box>
 
         <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
