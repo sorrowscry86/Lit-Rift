@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { auth } from '../config/firebase';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -12,12 +13,17 @@ const api = axios.create({
 
 // Add request interceptor for authentication
 api.interceptors.request.use(
-  (config) => {
-    // Add auth token if available (placeholder for future implementation)
-    // const token = localStorage.getItem('authToken');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+  async (config) => {
+    // Get current user and Firebase ID token
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        const token = await user.getIdToken();
+        config.headers.Authorization = `Bearer ${token}`;
+      } catch (error) {
+        console.error('Error getting auth token:', error);
+      }
+    }
     return config;
   },
   (error) => {
@@ -37,6 +43,10 @@ api.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           error.message = 'Authentication required. Please log in.';
+          // Redirect to login page on authentication failure
+          if (window.location.pathname !== '/') {
+            window.location.href = '/';
+          }
           break;
         case 403:
           error.message = 'You do not have permission to access this resource.';

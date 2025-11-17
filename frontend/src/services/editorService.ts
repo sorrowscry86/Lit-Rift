@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { auth } from '../config/firebase';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -11,12 +12,38 @@ const aiApi = axios.create({
   },
 });
 
+// Add request interceptor for authentication
+aiApi.interceptors.request.use(
+  async (config) => {
+    // Get current user and Firebase ID token
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        const token = await user.getIdToken();
+        config.headers.Authorization = `Bearer ${token}`;
+      } catch (error) {
+        console.error('Error getting auth token:', error);
+      }
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // Add error handling for AI operations
 aiApi.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.code === 'ECONNABORTED') {
       error.message = 'AI generation timed out. Please try a shorter request.';
+    } else if (error.response?.status === 401) {
+      error.message = 'Authentication required. Please log in.';
+      // Redirect to login page on authentication failure
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
     } else if (error.response?.status === 429) {
       error.message = 'Rate limit exceeded. Please wait before trying again.';
     } else if (error.response?.data?.error) {

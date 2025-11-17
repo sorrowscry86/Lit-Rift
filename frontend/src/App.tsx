@@ -4,6 +4,9 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import './App.css';
 
+// Contexts
+import { AuthProvider } from './contexts/AuthContext';
+
 // Pages
 import HomePage from './pages/HomePage';
 import ProjectPage from './pages/ProjectPage';
@@ -35,16 +38,18 @@ function App() {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <Router>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/project/:id" element={<ProjectPage />} />
-          <Route path="/project/:id/editor" element={<EditorPage />} />
-          <Route path="/project/:id/story-bible" element={<StoryBiblePage />} />
-          <Route path="/project/:projectId/planning" element={<VisualPlanningPage />} />
-          <Route path="/project/:projectId/continuity" element={<ContinuityPage />} />
-        </Routes>
-      </Router>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/project/:id" element={<ProjectPage />} />
+            <Route path="/project/:id/editor" element={<EditorPage />} />
+            <Route path="/project/:id/story-bible" element={<StoryBiblePage />} />
+            <Route path="/project/:projectId/planning" element={<VisualPlanningPage />} />
+            <Route path="/project/:projectId/continuity" element={<ContinuityPage />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }
