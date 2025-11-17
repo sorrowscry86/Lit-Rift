@@ -73,6 +73,7 @@ export default function UserMenu() {
         aria-controls={anchorEl ? 'account-menu' : undefined}
         aria-haspopup="true"
         aria-expanded={anchorEl ? 'true' : undefined}
+        aria-label="Open user account menu"
       >
         <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
           {getInitials(currentUser.email || 'U')}

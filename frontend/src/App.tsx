@@ -2,7 +2,9 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { Box } from '@mui/material';
 import './App.css';
+import './styles/accessibility.css';
 
 // Contexts
 import { AuthProvider } from './contexts/AuthContext';
@@ -12,6 +14,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import ErrorFallback from './components/ErrorFallback';
 import LoadingSpinner from './components/LoadingSpinner';
+import SkipToContent from './components/SkipToContent';
 import { logReactError } from './utils/errorLogger';
 
 // Lazy-loaded Pages (code splitting by route)
@@ -56,10 +59,12 @@ function App() {
     <ErrorBoundary fallback={<ErrorFallback />} onError={handleError}>
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
+        <SkipToContent />
         <AuthProvider>
           <Router>
-            <Suspense fallback={<LoadingSpinner fullPage message="Loading..." />}>
-              <Routes>
+            <Box id="main-content" component="main" role="main">
+              <Suspense fallback={<LoadingSpinner fullPage message="Loading..." />}>
+                <Routes>
                 {/* Public routes */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
@@ -114,8 +119,9 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-              </Routes>
-            </Suspense>
+                </Routes>
+              </Suspense>
+            </Box>
           </Router>
         </AuthProvider>
       </ThemeProvider>
