@@ -3,7 +3,7 @@ Pydantic schemas for AI Editor endpoints
 Provides request validation with type safety and constraints
 """
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, constr
 from typing import Optional, List
 
 
@@ -11,7 +11,7 @@ class GenerateSceneRequest(BaseModel):
     """Schema for scene generation requests"""
     project_id: str = Field(..., min_length=1, max_length=100, description="Project ID")
     scene_id: Optional[str] = Field(None, max_length=100, description="Optional scene ID for context")
-    prompt: str = Field(..., min_length=1, max_length=2000, description="Generation prompt")
+    prompt: constr(strip_whitespace=True, min_length=1, max_length=2000) = Field(..., description="Generation prompt")
     tone: str = Field(default="neutral", description="Tone of the scene")
     length: str = Field(default="medium", description="Length of generation")
     characters: Optional[List[str]] = Field(default=None, description="Character IDs to include")
@@ -32,13 +32,6 @@ class GenerateSceneRequest(BaseModel):
         if v not in valid_lengths:
             raise ValueError(f'Length must be one of: {", ".join(valid_lengths)}')
         return v
-
-    @field_validator('prompt')
-    @classmethod
-    def validate_prompt(cls, v: str) -> str:
-        if not v.strip():
-            raise ValueError('Prompt cannot be empty or whitespace only')
-        return v.strip()
 
 
 class GenerateDialogueRequest(BaseModel):
