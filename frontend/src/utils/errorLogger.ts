@@ -2,12 +2,10 @@
  * Error logging utility
  *
  * Provides centralized error logging with different levels and contexts
- * In production, this would integrate with error tracking services like:
- * - Sentry
- * - Rollbar
- * - Bugsnag
- * - LogRocket
+ * Integrates with Sentry for production error tracking
  */
+
+import * as Sentry from '@sentry/react';
 
 export enum ErrorLevel {
   INFO = 'info',
@@ -134,15 +132,61 @@ class ErrorLogger {
   }
 
   /**
-   * Send error to tracking service (Sentry, etc.)
+   * Send error to tracking service (Sentry)
    */
   private sendToErrorTracking(logData: any): void {
-    // In production, integrate with your error tracking service
-    // Example with Sentry:
-    // Sentry.captureException(logData);
+    try {
+      // Set context for Sentry
+      if (logData.context) {
+        Sentry.setContext('error_context', logData.context);
+      }
 
-    // Placeholder for now
-    console.log('Would send to error tracking:', logData);
+      // Set tags for filtering in Sentry
+      Sentry.setTag('error_level', logData.level);
+      if (logData.context?.type) {
+        Sentry.setTag('error_type', logData.context.type);
+      }
+      if (logData.context?.component) {
+        Sentry.setTag('component', logData.context.component);
+      }
+
+      // Convert ErrorLevel to Sentry SeverityLevel
+      const sentryLevel = this.mapToSentryLevel(logData.level);
+
+      // Capture the error
+      if (logData.stack) {
+        // If we have a real Error object with stack trace
+        const error = new Error(logData.message);
+        error.stack = logData.stack;
+        Sentry.captureException(error, {
+          level: sentryLevel,
+        });
+      } else {
+        // Just a message
+        Sentry.captureMessage(logData.message, sentryLevel);
+      }
+    } catch (error) {
+      // Don't let Sentry errors break the app
+      console.error('Failed to send error to Sentry:', error);
+    }
+  }
+
+  /**
+   * Map ErrorLevel to Sentry SeverityLevel
+   */
+  private mapToSentryLevel(level: ErrorLevel): Sentry.SeverityLevel {
+    switch (level) {
+      case ErrorLevel.INFO:
+        return 'info';
+      case ErrorLevel.WARNING:
+        return 'warning';
+      case ErrorLevel.ERROR:
+        return 'error';
+      case ErrorLevel.CRITICAL:
+        return 'fatal';
+      default:
+        return 'error';
+    }
   }
 
   /**

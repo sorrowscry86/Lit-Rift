@@ -10,6 +10,7 @@ import {
   sendEmailVerification,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
+import { setSentryUser, clearSentryUser } from '../config/sentry';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -89,6 +90,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);
+
+      // Set or clear Sentry user context
+      if (user) {
+        setSentryUser({
+          id: user.uid,
+          email: user.email || undefined,
+          username: user.displayName || undefined,
+        });
+      } else {
+        clearSentryUser();
+      }
     });
 
     return unsubscribe;

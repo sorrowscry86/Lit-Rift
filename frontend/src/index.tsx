@@ -4,6 +4,10 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { logPerformanceMetric } from './utils/performanceMonitoring';
+import { initSentry } from './config/sentry';
+
+// Initialize Sentry for error tracking (before anything else)
+initSentry();
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
