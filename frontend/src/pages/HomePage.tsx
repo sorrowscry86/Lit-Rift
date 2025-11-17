@@ -14,14 +14,21 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { projectAPI, Project } from '../services/storyBibleService';
 import UserMenu from '../components/UserMenu';
 import EmailVerificationBanner from '../components/EmailVerificationBanner';
+import ProjectCardSkeleton from '../components/ProjectCardSkeleton';
+import { logError } from '../utils/errorLogger';
 
 const HomePage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [newProject, setNewProject] = useState({
     title: '',
@@ -37,22 +44,42 @@ const HomePage: React.FC = () => {
 
   const loadProjects = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const response = await projectAPI.list();
       setProjects(response.data);
-    } catch (error) {
-      console.error('Failed to load projects:', error);
+    } catch (err: any) {
+      console.error('Failed to load projects:', err);
+      const errorMessage = err.response?.data?.error || 'Failed to load projects. Please try again.';
+      setError(errorMessage);
+      logError(err, {
+        component: 'HomePage',
+        action: 'loadProjects',
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCreateProject = async () => {
     try {
+      setCreating(true);
       const response = await projectAPI.create(newProject);
       setProjects([...projects, response.data]);
       setOpenDialog(false);
       setNewProject({ title: '', author: '', genre: '', description: '' });
       navigate(`/project/${response.data.id}`);
-    } catch (error) {
-      console.error('Failed to create project:', error);
+    } catch (err: any) {
+      console.error('Failed to create project:', err);
+      const errorMessage = err.response?.data?.error || 'Failed to create project. Please try again.';
+      alert(errorMessage); // TODO: Replace with better error UI (Snackbar)
+      logError(err, {
+        component: 'HomePage',
+        action: 'createProject',
+        projectData: newProject,
+      });
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -81,10 +108,38 @@ const HomePage: React.FC = () => {
 
         <EmailVerificationBanner />
 
-        <Grid container spacing={3}>
-          {projects.map((project) => (
-            <Grid item xs={12} md={6} lg={4} key={project.id}>
-              <Card>
+        {/* Error state */}
+        {error && (
+          <Alert
+            severity="error"
+            sx={{ mb: 3 }}
+            action={
+              <Button color="inherit" size="small" onClick={loadProjects}>
+                Retry
+              </Button>
+            }
+          >
+            {error}
+          </Alert>
+        )}
+
+        {/* Loading state */}
+        {loading && (
+          <Grid container spacing={3}>
+            {[1, 2, 3].map((i) => (
+              <Grid item xs={12} md={6} lg={4} key={i}>
+                <ProjectCardSkeleton />
+              </Grid>
+            ))}
+          </Grid>
+        )}
+
+        {/* Projects grid */}
+        {!loading && !error && (
+          <Grid container spacing={3}>
+            {projects.map((project) => (
+              <Grid item xs={12} md={6} lg={4} key={project.id}>
+                <Card>
                 <CardContent>
                   <Typography variant="h5" component="h2" gutterBottom>
                     {project.title}
@@ -107,14 +162,17 @@ const HomePage: React.FC = () => {
               </Card>
             </Grid>
           ))}
-        </Grid>
 
-        {projects.length === 0 && (
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <Typography variant="h6" color="text.secondary">
-              No projects yet. Create your first novel!
-            </Typography>
-          </Box>
+            {projects.length === 0 && (
+              <Grid item xs={12}>
+                <Box sx={{ textAlign: 'center', py: 8 }}>
+                  <Typography variant="h6" color="text.secondary">
+                    No projects yet. Create your first novel!
+                  </Typography>
+                </Box>
+              </Grid>
+            )}
+          </Grid>
         )}
       </Box>
 
@@ -161,9 +219,11 @@ const HomePage: React.FC = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button onClick={handleCreateProject} variant="contained">
-            Create
+          <Button onClick={() => setOpenDialog(false)} disabled={creating}>
+            Cancel
+          </Button>
+          <Button onClick={handleCreateProject} variant="contained" disabled={creating}>
+            {creating ? <CircularProgress size={24} /> : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>

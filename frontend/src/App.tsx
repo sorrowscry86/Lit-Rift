@@ -9,6 +9,9 @@ import { AuthProvider } from './contexts/AuthContext';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
+import ErrorFallback from './components/ErrorFallback';
+import { logReactError } from './utils/errorLogger';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -41,12 +44,20 @@ const darkTheme = createTheme({
 });
 
 function App() {
+  const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
+    // Log error to error tracking service
+    logReactError(error, errorInfo, {
+      component: 'App',
+    });
+  };
+
   return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <AuthProvider>
-        <Router>
-          <Routes>
+    <ErrorBoundary fallback={<ErrorFallback />} onError={handleError}>
+      <ThemeProvider theme={darkTheme}>
+        <CssBaseline />
+        <AuthProvider>
+          <Router>
+            <Routes>
             {/* Public routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
@@ -102,9 +113,10 @@ function App() {
               }
             />
           </Routes>
-        </Router>
-      </AuthProvider>
-    </ThemeProvider>
+          </Router>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

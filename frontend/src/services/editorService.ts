@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { auth } from '../config/firebase';
+import { logApiError } from '../utils/errorLogger';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -36,18 +37,23 @@ aiApi.interceptors.request.use(
 aiApi.interceptors.response.use(
   (response) => response,
   (error) => {
+    const endpoint = error.config?.url || 'unknown';
+
     if (error.code === 'ECONNABORTED') {
       error.message = 'AI generation timed out. Please try a shorter request.';
+      logApiError(endpoint, error);
     } else if (error.response?.status === 401) {
       error.message = 'Authentication required. Please log in.';
       // Redirect to login page on authentication failure
-      if (window.location.pathname !== '/') {
-        window.location.href = '/';
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/signup') {
+        window.location.href = '/login';
       }
     } else if (error.response?.status === 429) {
       error.message = 'Rate limit exceeded. Please wait before trying again.';
+      logApiError(endpoint, error);
     } else if (error.response?.data?.error) {
       error.message = error.response.data.error;
+      logApiError(endpoint, error);
     }
     return Promise.reject(error);
   }
