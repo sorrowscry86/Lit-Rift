@@ -9,6 +9,10 @@ import { TextEncoder, TextDecoder } from 'util';
 global.TextEncoder = TextEncoder as any;
 global.TextDecoder = TextDecoder as any;
 
+// Polyfill for ReadableStream (required by Firebase and undici)
+import { ReadableStream } from 'stream/web';
+(global as any).ReadableStream = ReadableStream;
+
 // Mock Firebase to avoid initialization in tests
 jest.mock('./config/firebase', () => ({
   auth: {
