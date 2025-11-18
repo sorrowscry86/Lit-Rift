@@ -23,6 +23,7 @@ import UserMenu from '../components/UserMenu';
 import EmailVerificationBanner from '../components/EmailVerificationBanner';
 import ProjectCardSkeleton from '../components/ProjectCardSkeleton';
 import { logError } from '../utils/errorLogger';
+import { useToast } from '../contexts/ToastContext';
 
 const HomePage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -37,6 +38,7 @@ const HomePage: React.FC = () => {
     description: '',
   });
   const navigate = useNavigate();
+  const { showError, showSuccess } = useToast();
 
   useEffect(() => {
     loadProjects();
@@ -68,11 +70,12 @@ const HomePage: React.FC = () => {
       setProjects([...projects, response.data]);
       setOpenDialog(false);
       setNewProject({ title: '', author: '', genre: '', description: '' });
+      showSuccess(`Project "${response.data.title}" created successfully!`);
       navigate(`/project/${response.data.id}`);
     } catch (err: any) {
       console.error('Failed to create project:', err);
       const errorMessage = err.response?.data?.error || 'Failed to create project. Please try again.';
-      alert(errorMessage); // TODO: Replace with better error UI (Snackbar)
+      showError(errorMessage);
       logError(err, {
         component: 'HomePage',
         action: 'createProject',

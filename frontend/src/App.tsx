@@ -8,6 +8,7 @@ import './styles/accessibility.css';
 
 // Contexts
 import { AuthProvider } from './contexts/AuthContext';
+import { ToastProvider } from './contexts/ToastContext';
 
 // Components (keep these as direct imports - small and always needed)
 import ProtectedRoute from './components/ProtectedRoute';
@@ -60,8 +61,9 @@ function App() {
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
         <SkipToContent />
-        <AuthProvider>
-          <Router>
+        <ToastProvider>
+          <AuthProvider>
+            <Router>
             <Box id="main-content" component="main" role="main">
               <Suspense fallback={<LoadingSpinner fullPage message="Loading..." />}>
                 <Routes>
@@ -124,6 +126,7 @@ function App() {
             </Box>
           </Router>
         </AuthProvider>
+        </ToastProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
