@@ -30,12 +30,12 @@ Successfully eliminated N+1 query anti-patterns across backend services, achievi
 - **Impact:** Eliminated N database queries per character
 - **Code Pattern:**
   ```python
+  from collections import defaultdict
+
   # Build efficient lookup map
-  char_scene_map = {}
+  char_scene_map = defaultdict(list)
   for scene in scenes:
       for char_id in scene.get('characters', []):
-          if char_id not in char_scene_map:
-              char_scene_map[char_id] = []
           char_scene_map[char_id].append(scene)
 
   # Fast O(1) lookup instead of O(n) filtering
@@ -48,13 +48,13 @@ Successfully eliminated N+1 query anti-patterns across backend services, achievi
 - **Impact:** Eliminated N database queries per location
 - **Code Pattern:**
   ```python
+  from collections import defaultdict
+
   # Build efficient lookup map
-  loc_scene_map = {}
+  loc_scene_map = defaultdict(list)
   for scene in scenes:
       loc_id = scene.get('location_id')
       if loc_id:
-          if loc_id not in loc_scene_map:
-              loc_scene_map[loc_id] = []
           loc_scene_map[loc_id].append(scene)
 
   # Fast O(1) lookup
@@ -67,6 +67,9 @@ Successfully eliminated N+1 query anti-patterns across backend services, achievi
 - **Impact:** Reduced database roundtrips by 60-80%
 - **Code Pattern:**
   ```python
+  # Firestore batch operation limit (500 max, using 450 for safety margin)
+  FIRESTORE_BATCH_COMMIT_LIMIT = 450
+
   batch = self.db.batch()
   operation_count = 0
 
@@ -75,8 +78,8 @@ Successfully eliminated N+1 query anti-patterns across backend services, achievi
       batch.delete(doc.reference)
       operation_count += 1
 
-      # Auto-commit at 450 ops (under 500 Firestore limit)
-      if operation_count >= 450:
+      # Auto-commit at defined limit (under 500 Firestore limit)
+      if operation_count >= FIRESTORE_BATCH_COMMIT_LIMIT:
           batch.commit()
           batch = self.db.batch()
           operation_count = 0

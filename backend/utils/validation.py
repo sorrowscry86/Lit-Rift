@@ -6,6 +6,7 @@ from functools import wraps
 from flask import request, jsonify
 from pydantic import BaseModel, ValidationError
 from typing import Type, Callable
+import logging
 
 
 def validate_request(schema: Type[BaseModel]) -> Callable:
@@ -64,10 +65,12 @@ def validate_request(schema: Type[BaseModel]) -> Callable:
                 }), 400
 
             except Exception as e:
+                # Log the full exception for debugging
+                logging.exception("An unexpected error occurred during request validation.")
                 return jsonify({
-                    'error': 'Invalid request',
-                    'details': str(e)
-                }), 400
+                    'error': 'An internal error occurred during request validation.',
+                    'details': 'Please contact support.'
+                }), 500
 
         return decorated_function
     return decorator

@@ -6,6 +6,9 @@ AI-powered continuity checking for manuscripts
 import google.generativeai as genai
 from typing import List, Dict, Optional
 
+# Firestore batch operation limit (500 max, using 450 for safety margin)
+FIRESTORE_BATCH_COMMIT_LIMIT = 450
+
 class ContinuityTrackerService:
     """Service for tracking and checking story continuity"""
     
@@ -250,8 +253,8 @@ List only clear contradictions. Format as:
                 batch.delete(doc.reference)
                 operation_count += 1
 
-                # Commit batch if approaching limit (500 ops max)
-                if operation_count >= 450:
+                # Commit batch if approaching limit
+                if operation_count >= FIRESTORE_BATCH_COMMIT_LIMIT:
                     batch.commit()
                     batch = self.db.batch()
                     operation_count = 0
@@ -264,7 +267,7 @@ List only clear contradictions. Format as:
                 operation_count += 1
 
                 # Commit batch if approaching limit
-                if operation_count >= 450:
+                if operation_count >= FIRESTORE_BATCH_COMMIT_LIMIT:
                     batch.commit()
                     batch = self.db.batch()
                     operation_count = 0

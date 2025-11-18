@@ -1,0 +1,263 @@
+LIT-RIFT DEPLOYMENT GUIDE
+=========================
+
+QUICK DEPLOY (3 minutes)
+-------------------------
+cd scripts
+./deploy.sh production
+
+DETAILED DEPLOYMENT STEPS
+==========================
+
+STEP 1: Pre-Deployment Checklist (2 minutes)
+---------------------------------------------
+[ ] Node.js 16+ installed (check: node --version)
+[ ] npm 8+ installed (check: npm --version)
+[ ] Firebase project created
+[ ] .env file configured with all variables
+[ ] Code tested locally (npm test)
+[ ] Build verified (npm run build)
+
+STEP 2: Environment Configuration (3 minutes)
+----------------------------------------------
+1. Copy environment template:
+   cp frontend/.env.example frontend/.env
+
+2. Configure Firebase variables:
+   REACT_APP_FIREBASE_API_KEY=your-api-key
+   REACT_APP_FIREBASE_AUTH_DOMAIN=your-domain
+   REACT_APP_FIREBASE_PROJECT_ID=your-project-id
+   REACT_APP_FIREBASE_STORAGE_BUCKET=your-bucket
+   REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+   REACT_APP_FIREBASE_APP_ID=your-app-id
+
+3. Configure API URL:
+   REACT_APP_API_URL=https://your-api-domain.com/api
+
+4. (Optional) Configure Sentry:
+   REACT_APP_SENTRY_DSN=your-sentry-dsn
+
+STEP 3: Build Production Bundle (2 minutes)
+--------------------------------------------
+cd frontend
+npm run build
+
+Expected output:
+- Build folder created: frontend/build/
+- Bundle size: ~168 kB (gzipped)
+- 27 code-split chunks
+
+STEP 4: Deploy to Platform (5-10 minutes)
+------------------------------------------
+
+OPTION A: Automated Deployment (Recommended)
+   cd scripts
+   ./deploy.sh production
+   
+   This script will:
+   - Run tests
+   - Create production build
+   - Generate deployment manifest
+   - Provide next steps
+
+OPTION B: Vercel Deployment
+   cd frontend
+   vercel --prod
+   
+   Follow prompts to link project
+
+OPTION C: Netlify Deployment
+   cd frontend
+   netlify deploy --prod --dir=build
+   
+   Follow prompts to configure
+
+OPTION D: AWS S3 + CloudFront
+   1. Create S3 bucket
+   2. Upload build/ contents to bucket
+   3. Configure CloudFront distribution
+   4. Update DNS records
+
+OPTION E: Manual Server Deployment
+   1. Upload frontend/build/ to server
+   2. Configure nginx/apache to serve static files
+   3. Set up SSL certificate
+   4. Point domain to server
+
+STEP 5: Verify Deployment (2 minutes)
+--------------------------------------
+1. Open deployed URL in browser
+2. Test authentication:
+   - Sign up for new account
+   - Log in with credentials
+   - Verify Google OAuth works
+3. Test core features:
+   - Create a project
+   - View project list
+   - Test navigation
+4. Check error tracking (if Sentry configured)
+5. Verify performance (check Network tab)
+
+STEP 6: Post-Deployment (5 minutes)
+------------------------------------
+1. Create backup:
+   cd scripts
+   ./create-backup.sh production
+
+2. Monitor error logs (Sentry dashboard)
+
+3. Check analytics (if configured)
+
+4. Update DNS (if needed)
+
+5. Document deployment:
+   - Deployment time
+   - Git commit hash
+   - Environment details
+
+ROLLBACK PROCEDURE
+==================
+
+If deployment fails:
+
+1. Identify last working backup:
+   ls backups/production/
+
+2. Execute rollback:
+   cd scripts
+   ./rollback.sh production [timestamp]
+   
+   Example:
+   ./rollback.sh production 2025-11-18-14-30
+
+3. Verify rollback worked
+
+4. Investigate issue in development
+
+TROUBLESHOOTING
+===============
+
+Build Fails
+-----------
+Error: TypeScript compilation errors
+Fix: Run npx tsc --noEmit to see errors
+
+Error: Missing environment variables
+Fix: Check .env file has all required vars
+
+Error: Out of memory
+Fix: Increase Node memory: NODE_OPTIONS=--max-old-space-size=4096 npm run build
+
+Deployment Fails
+----------------
+Error: Firebase authentication not working
+Fix: Verify Firebase config in .env is correct
+
+Error: API calls failing
+Fix: Check REACT_APP_API_URL is correct and API is running
+
+Error: 404 on routes
+Fix: Configure server for SPA routing (all routes → index.html)
+
+Runtime Errors
+--------------
+Error: White screen
+Fix: Check browser console for errors
+
+Error: Authentication fails
+Fix: Verify Firebase security rules deployed
+
+Error: API 403/401 errors
+Fix: Check Firebase token is being sent correctly
+
+PERFORMANCE OPTIMIZATION
+========================
+
+After deployment:
+
+1. Check Lighthouse scores:
+   - Performance: Should be 85+
+   - Accessibility: Should be 95+
+   - Best Practices: Should be 90+
+   - SEO: Should be 85+
+
+2. Monitor Core Web Vitals:
+   - LCP (Largest Contentful Paint): < 2.5s
+   - FID (First Input Delay): < 100ms
+   - CLS (Cumulative Layout Shift): < 0.1
+
+3. If scores are low:
+   - Enable gzip compression
+   - Configure CDN caching
+   - Optimize images further
+   - Enable HTTP/2
+
+MONITORING
+==========
+
+Set up monitoring for:
+
+1. Error tracking (Sentry)
+   - Check daily for new errors
+   - Set up alerts for critical errors
+
+2. Analytics (if configured)
+   - Monitor user signups
+   - Track feature usage
+   - Identify bottlenecks
+
+3. Performance monitoring
+   - Check Web Vitals dashboard
+   - Monitor API response times
+   - Track bundle sizes
+
+MAINTENANCE
+===========
+
+Regular tasks:
+
+Daily:
+- Check error logs
+- Monitor user reports
+
+Weekly:
+- Review analytics
+- Update dependencies (security patches)
+- Test backup/rollback procedures
+
+Monthly:
+- Full security audit
+- Performance review
+- User feedback review
+- Dependency updates
+
+SECURITY BEST PRACTICES
+=======================
+
+1. Never commit .env files to git
+2. Rotate Firebase keys regularly
+3. Monitor for security vulnerabilities: npm audit
+4. Keep dependencies updated
+5. Review Firebase security rules
+6. Enable rate limiting on API
+7. Set up DDoS protection (CloudFlare)
+8. Regular security audits
+
+EXPECTED TIMELINES
+==================
+
+First-time deployment: 20-30 minutes
+Subsequent deployments: 3-5 minutes
+Rollback: 5 minutes
+Backup creation: 1 minute
+
+SUPPORT
+=======
+
+Issues: https://github.com/your-username/lit-rift/issues
+Email: support@lit-rift.com
+Documentation: See README.md and other guides
+
+---
+Last Updated: 2025-11-18
+Version: 1.0.0

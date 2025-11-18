@@ -12,12 +12,7 @@ load_dotenv()
 def validate_config():
     """Validate required environment variables at startup"""
     required = ['GOOGLE_API_KEY', 'FIREBASE_CONFIG']
-    missing = []
-
-    for key in required:
-        value = os.getenv(key)
-        if not value:
-            missing.append(key)
+    missing = [key for key in required if not os.getenv(key)]
 
     if missing and os.getenv('FLASK_ENV') != 'development':
         print(f"Warning: Missing required environment variables in production: {', '.join(missing)}")
@@ -29,7 +24,8 @@ app = Flask(__name__)
 CORS(app)
 
 # Validate configuration
-validate_config()
+if not validate_config() and os.getenv('FLASK_ENV') != 'development':
+    raise RuntimeError("Missing required environment variables. Application cannot start.")
 
 # Initialize Firebase
 db = None
@@ -81,7 +77,7 @@ def set_security_headers(response):
     """Add security headers to all responses"""
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'DENY'
-    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Content-Security-Policy'] = "default-src 'self'"
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     return response
 
