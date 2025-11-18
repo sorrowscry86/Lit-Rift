@@ -22,7 +22,8 @@ describe('ProtectedRoute', () => {
       signup: jest.fn(),
       logout: jest.fn(),
       loginWithGoogle: jest.fn(),
-      resetPassword: jest.fn(),
+              getIdToken: jest.fn().mockResolvedValue('mock-token'),
+      getIdToken: jest.fn().mockResolvedValue('mock-token'),
       loading: false,
     };
 
@@ -106,7 +107,7 @@ describe('ProtectedRoute', () => {
               signup: jest.fn(),
               logout: jest.fn(),
               loginWithGoogle: jest.fn(),
-              resetPassword: jest.fn(),
+              getIdToken: jest.fn().mockResolvedValue('mock-token'),
               loading: false,
             }}
           >
@@ -138,7 +139,7 @@ describe('ProtectedRoute', () => {
               signup: jest.fn(),
               logout: jest.fn(),
               loginWithGoogle: jest.fn(),
-              resetPassword: jest.fn(),
+              getIdToken: jest.fn().mockResolvedValue('mock-token'),
               loading: false,
             }}
           >
@@ -176,7 +177,7 @@ describe('ProtectedRoute', () => {
         signup: jest.fn(),
         logout: jest.fn(),
         loginWithGoogle: jest.fn(),
-        resetPassword: jest.fn(),
+              getIdToken: jest.fn().mockResolvedValue('mock-token'),
         loading: false,
       };
 
@@ -210,7 +211,7 @@ describe('ProtectedRoute', () => {
         signup: jest.fn(),
         logout: jest.fn(),
         loginWithGoogle: jest.fn(),
-        resetPassword: jest.fn(),
+              getIdToken: jest.fn().mockResolvedValue('mock-token'),
         loading: false,
       };
 

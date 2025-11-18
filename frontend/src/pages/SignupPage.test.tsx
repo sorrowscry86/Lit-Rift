@@ -22,7 +22,7 @@ describe('SignupPage', () => {
       signup: mockSignup,
       logout: jest.fn(),
       loginWithGoogle: mockLoginWithGoogle,
-      resetPassword: jest.fn(),
+      getIdToken: jest.fn().mockResolvedValue(null),
       loading: false,
     };
 
