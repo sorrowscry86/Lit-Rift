@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Simplified tray icon - monochrome for system tray -->
+  <defs>
+    <linearGradient id="trayGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e5e5e5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Book pages -->
+  <path d="M 18 20 L 18 50 L 35 54 L 35 24 Z" fill="url(#trayGrad)" opacity="0.8"/>
+  <path d="M 22 18 L 22 48 L 39 52 L 39 22 Z" fill="url(#trayGrad)"/>
+
+  <!-- Pen -->
+  <path d="M 42 24 L 50 16 L 54 20 L 46 28 Z" fill="url(#trayGrad)"/>
+  <rect x="43" y="28" width="4" height="22" fill="url(#trayGrad)"/>
+
+  <!-- Sparkle -->
+  <circle cx="54" cy="12" r="3" fill="#fbbf24"/>
+</svg>
