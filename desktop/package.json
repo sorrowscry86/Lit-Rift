@@ -1,0 +1,137 @@
+{
+  "name": "lit-rift-desktop",
+  "version": "1.0.0",
+  "description": "Lit-Rift Desktop Application - Novel creation tool with AI assistance",
+  "main": "main.js",
+  "author": "Lit-Rift",
+  "license": "ISC",
+  "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "dependencies": {
+    "electron-updater": "^6.1.7"
+  },
+  "devDependencies": {
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.litrift.app",
+    "productName": "Lit-Rift",
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "build/**/*",
+      "backend-dist/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "backend-dist",
+        "to": "backend",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        },
+        {
+          "target": "msi",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-portable.${ext}"
+    },
+    "msi": {
+      "artifactName": "${productName}-${version}.${ext}"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "build/icon.icns",
+      "category": "public.app-category.productivity",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "artifactName": "${productName}-${version}-mac.${ext}"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        },
+        {
+          "target": "rpm",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "Office",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "appImage": {
+      "artifactName": "${productName}-${version}.${ext}"
+    },
+    "publish": {
+      "provider": "github",
+      "releaseType": "release"
+    }
+  }
+}
