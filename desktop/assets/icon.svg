@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Lit-Rift Application Icon -->
+  <!-- Dark background for modern look -->
+  <rect width="512" height="512" rx="100" fill="#1a1a2e"/>
+
+  <!-- Gradient overlay for depth -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ef4444;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Book/Pages representation (left side) -->
+  <path d="M 140 150 L 140 360 L 240 380 L 240 170 Z" fill="url(#grad1)" opacity="0.9"/>
+  <path d="M 160 140 L 160 350 L 260 370 L 260 160 Z" fill="url(#grad1)" opacity="0.7"/>
+  <path d="M 180 130 L 180 340 L 280 360 L 280 150 Z" fill="url(#grad1)"/>
+
+  <!-- Pen/Quill representation (right side) -->
+  <path d="M 320 180 L 380 120 L 400 140 L 340 200 Z" fill="url(#grad2)"/>
+  <path d="M 330 190 L 330 380 L 350 380 L 350 190 Z" fill="url(#grad2)"/>
+  <ellipse cx="340" cy="385" rx="15" ry="8" fill="#ef4444"/>
+
+  <!-- Sparkle/AI indicator (top right) -->
+  <circle cx="420" cy="90" r="8" fill="#fbbf24"/>
+  <circle cx="400" cy="110" r="5" fill="#fbbf24" opacity="0.7"/>
+  <circle cx="440" cy="110" r="6" fill="#fbbf24" opacity="0.8"/>
+
+  <!-- App name text -->
+  <text x="256" y="440" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="#ffffff">
+    Lit-Rift
+  </text>
+</svg>
