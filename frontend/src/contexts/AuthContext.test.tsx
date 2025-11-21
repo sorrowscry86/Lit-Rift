@@ -52,7 +52,7 @@ describe('AuthContext', () => {
     displayName: 'Test User',
     emailVerified: true,
     getIdToken: jest.fn().mockResolvedValue('mock-token-abc123'),
-  } as any;
+} as unknown as firebaseAuth.User;
 
   beforeEach(() => {
     jest.clearAllMocks();
