@@ -47,7 +47,8 @@ describe('SignupPage', () => {
       expect(screen.getByText('AI-Powered Novel Writing')).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
       expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
-      expect(screen.getAllByLabelText(/^password$/i)).toHaveLength(1);
+      // Password input exists (using getElementById since label text includes asterisk)
+      expect(document.querySelector('#password')).toBeInTheDocument();
       expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /continue with google/i })).toBeInTheDocument();
@@ -229,9 +230,10 @@ describe('SignupPage', () => {
       const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
       const submitButton = screen.getByRole('button', { name: /create account/i });
 
+      // Use a password that passes local validation (6+ chars) but Firebase considers weak
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInput, { target: { value: 'weak' } });
-      fireEvent.change(confirmPasswordInput, { target: { value: 'weak' } });
+      fireEvent.change(passwordInput, { target: { value: 'weakpw' } });
+      fireEvent.change(confirmPasswordInput, { target: { value: 'weakpw' } });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -347,7 +349,7 @@ describe('SignupPage', () => {
       renderSignupPage();
 
       const emailInput = screen.getByLabelText(/email address/i) as HTMLInputElement;
-      const passwordInput = screen.getByLabelText('Password') as HTMLInputElement;
+      const passwordInput = document.querySelector('#password') as HTMLInputElement;
       const confirmPasswordInput = screen.getByLabelText(/confirm password/i) as HTMLInputElement;
       const submitButton = screen.getByRole('button', { name: /create account/i });
 

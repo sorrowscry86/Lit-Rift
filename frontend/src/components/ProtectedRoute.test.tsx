@@ -1,9 +1,17 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { render, screen, cleanup } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
-import { AuthContext } from '../contexts/AuthContext';
 import { User } from 'firebase/auth';
+import * as AuthContextModule from '../contexts/AuthContext';
+
+// Mock the useAuth hook
+jest.mock('../contexts/AuthContext', () => ({
+  ...jest.requireActual('../contexts/AuthContext'),
+  useAuth: jest.fn(),
+}));
+
+const mockUseAuth = AuthContextModule.useAuth as jest.MockedFunction<typeof AuthContextModule.useAuth>;
 
 describe('ProtectedRoute', () => {
   const TestComponent = () => <div>Protected Content</div>;
@@ -15,36 +23,42 @@ describe('ProtectedRoute', () => {
     displayName: 'Test User',
   } as User;
 
-  const renderProtectedRoute = (currentUser: User | null) => {
-    const authContextValue = {
+  const renderProtectedRoute = (currentUser: User | null, initialPath = '/') => {
+    mockUseAuth.mockReturnValue({
       currentUser,
       login: jest.fn(),
       signup: jest.fn(),
       logout: jest.fn(),
       loginWithGoogle: jest.fn(),
-              getIdToken: jest.fn().mockResolvedValue('mock-token'),
       getIdToken: jest.fn().mockResolvedValue('mock-token'),
       loading: false,
-    };
+    });
 
     return render(
-      <BrowserRouter>
-        <AuthContext.Provider value={authContextValue}>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <TestComponent />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/login" element={<LoginComponent />} />
-          </Routes>
-        </AuthContext.Provider>
-      </BrowserRouter>
+      <MemoryRouter initialEntries={[initialPath]}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <TestComponent />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/login" element={<LoginComponent />} />
+        </Routes>
+      </MemoryRouter>
     );
   };
+
+  beforeEach(() => {
+    // Reset mock implementation before each test
+    mockUseAuth.mockReset();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
 
   describe('Authentication Flow', () => {
     test('renders children when user is authenticated', () => {
@@ -98,64 +112,60 @@ describe('ProtectedRoute', () => {
     });
 
     test('redirects when currentUser becomes null', () => {
+      mockUseAuth.mockReturnValue({
+        currentUser: mockUser,
+        login: jest.fn(),
+        signup: jest.fn(),
+        logout: jest.fn(),
+        loginWithGoogle: jest.fn(),
+        getIdToken: jest.fn().mockResolvedValue('mock-token'),
+        loading: false,
+      });
+
       const { rerender } = render(
-        <BrowserRouter>
-          <AuthContext.Provider
-            value={{
-              currentUser: mockUser,
-              login: jest.fn(),
-              signup: jest.fn(),
-              logout: jest.fn(),
-              loginWithGoogle: jest.fn(),
-              getIdToken: jest.fn().mockResolvedValue('mock-token'),
-              loading: false,
-            }}
-          >
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <TestComponent />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/login" element={<LoginComponent />} />
-            </Routes>
-          </AuthContext.Provider>
-        </BrowserRouter>
+        <MemoryRouter initialEntries={['/']}>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <TestComponent />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/login" element={<LoginComponent />} />
+          </Routes>
+        </MemoryRouter>
       );
 
       // Initially authenticated
       expect(screen.getByText('Protected Content')).toBeInTheDocument();
 
       // User logs out
+      mockUseAuth.mockReturnValue({
+        currentUser: null,
+        login: jest.fn(),
+        signup: jest.fn(),
+        logout: jest.fn(),
+        loginWithGoogle: jest.fn(),
+        getIdToken: jest.fn().mockResolvedValue('mock-token'),
+        loading: false,
+      });
+
       rerender(
-        <BrowserRouter>
-          <AuthContext.Provider
-            value={{
-              currentUser: null,
-              login: jest.fn(),
-              signup: jest.fn(),
-              logout: jest.fn(),
-              loginWithGoogle: jest.fn(),
-              getIdToken: jest.fn().mockResolvedValue('mock-token'),
-              loading: false,
-            }}
-          >
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <TestComponent />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/login" element={<LoginComponent />} />
-            </Routes>
-          </AuthContext.Provider>
-        </BrowserRouter>
+        <MemoryRouter initialEntries={['/']}>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <TestComponent />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/login" element={<LoginComponent />} />
+          </Routes>
+        </MemoryRouter>
       );
 
       expect(screen.getByText('Login Page')).toBeInTheDocument();
@@ -171,25 +181,23 @@ describe('ProtectedRoute', () => {
     });
 
     test('renders multiple children', () => {
-      const authContextValue = {
+      mockUseAuth.mockReturnValue({
         currentUser: mockUser,
         login: jest.fn(),
         signup: jest.fn(),
         logout: jest.fn(),
         loginWithGoogle: jest.fn(),
-              getIdToken: jest.fn().mockResolvedValue('mock-token'),
+        getIdToken: jest.fn().mockResolvedValue('mock-token'),
         loading: false,
-      };
+      });
 
       render(
-        <BrowserRouter>
-          <AuthContext.Provider value={authContextValue}>
-            <ProtectedRoute>
-              <div>First Child</div>
-              <div>Second Child</div>
-            </ProtectedRoute>
-          </AuthContext.Provider>
-        </BrowserRouter>
+        <MemoryRouter>
+          <ProtectedRoute>
+            <div>First Child</div>
+            <div>Second Child</div>
+          </ProtectedRoute>
+        </MemoryRouter>
       );
 
       expect(screen.getByText('First Child')).toBeInTheDocument();
@@ -205,24 +213,22 @@ describe('ProtectedRoute', () => {
         </div>
       );
 
-      const authContextValue = {
+      mockUseAuth.mockReturnValue({
         currentUser: mockUser,
         login: jest.fn(),
         signup: jest.fn(),
         logout: jest.fn(),
         loginWithGoogle: jest.fn(),
-              getIdToken: jest.fn().mockResolvedValue('mock-token'),
+        getIdToken: jest.fn().mockResolvedValue('mock-token'),
         loading: false,
-      };
+      });
 
       render(
-        <BrowserRouter>
-          <AuthContext.Provider value={authContextValue}>
-            <ProtectedRoute>
-              <ComplexComponent />
-            </ProtectedRoute>
-          </AuthContext.Provider>
-        </BrowserRouter>
+        <MemoryRouter>
+          <ProtectedRoute>
+            <ComplexComponent />
+          </ProtectedRoute>
+        </MemoryRouter>
       );
 
       expect(screen.getByText('Title')).toBeInTheDocument();
