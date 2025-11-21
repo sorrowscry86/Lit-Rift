@@ -239,7 +239,7 @@ If adding integration tests:
 3. Don't use production user emails
 4. Implement test data isolation
 
-## Troubleshoats
+## Troubleshooting
 
 ### Tests Fail with "Firebase not initialized"
 ✅ **Solution:** This shouldn't happen with current mocks. Check `setupTests.ts`.
