@@ -1,0 +1,76 @@
+version: '3.8'
+
+# Production Docker Compose Configuration
+# Optimized builds, health checks, restart policies
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      target: production
+      args:
+        BUILDPLATFORM: ${BUILDPLATFORM:-linux/amd64}
+        TARGETPLATFORM: ${TARGETPLATFORM:-linux/amd64}
+    container_name: lit-rift-backend-prod
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - FIREBASE_CONFIG=${FIREBASE_CONFIG}
+      - PORT=5000
+      - GUNICORN_WORKERS=${GUNICORN_WORKERS:-4}
+      - GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-120}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: always
+    networks:
+      - lit-rift-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      target: production
+      args:
+        BUILDPLATFORM: ${BUILDPLATFORM:-linux/amd64}
+        TARGETPLATFORM: ${TARGETPLATFORM:-linux/amd64}
+    container_name: lit-rift-frontend-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:5000}
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: always
+    networks:
+      - lit-rift-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  lit-rift-network:
+    driver: bridge
+
+volumes:
+  backend-data:

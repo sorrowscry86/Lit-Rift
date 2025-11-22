@@ -1,0 +1,59 @@
+# Multi-platform Desktop Application Dockerfile for Lit-Rift
+# Supports: linux/amd64, linux/arm64
+
+FROM node:18-alpine AS base
+
+# Set build arguments for multi-platform support
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+RUN echo "Building on $BUILDPLATFORM for $TARGETPLATFORM"
+
+WORKDIR /app
+
+# Install dependencies for Electron
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    libx11 \
+    libxkbfile \
+    libsecret
+
+# Stage 2: Dependencies
+FROM base AS dependencies
+
+# Copy package files
+COPY desktop/package*.json ./
+
+# Install dependencies
+RUN npm ci --legacy-peer-deps
+
+# Stage 3: Builder
+FROM dependencies AS builder
+
+# Copy source code
+COPY desktop/ .
+
+# Build desktop application
+RUN npm run build
+
+# Stage 4: Runtime
+FROM base AS runtime
+
+# Copy built application
+COPY --from=builder /app/dist /app/dist
+COPY --from=builder /app/package*.json /app/
+
+# Install production dependencies only
+RUN npm ci --production --legacy-peer-deps
+
+# Create non-root user
+RUN addgroup -g 1000 appuser && \
+    adduser -D -u 1000 -G appuser appuser && \
+    chown -R appuser:appuser /app
+
+USER appuser
+
+# Start application
+CMD ["npm", "start"]
