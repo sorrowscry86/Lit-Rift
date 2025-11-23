@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -35,22 +35,7 @@ const EditorPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
 
-  useEffect(() => {
-    if (id) {
-      loadInitialData(id);
-    }
-  }, [id]);
-
-  const loadInitialData = async (projectId: string) => {
-    setPageLoading(true);
-    try {
-      await Promise.all([loadScenes(projectId), loadCharacters(projectId)]);
-    } finally {
-      setPageLoading(false);
-    }
-  };
-
-  const loadScenes = async (projectId: string) => {
+  const loadScenes = useCallback(async (projectId: string) => {
     try {
       const response = await sceneAPI.list(projectId);
       setScenes(response.data);
@@ -61,16 +46,31 @@ const EditorPage: React.FC = () => {
     } catch (error) {
       console.error('Failed to load scenes:', error);
     }
-  };
+  }, []);
 
-  const loadCharacters = async (projectId: string) => {
+  const loadCharacters = useCallback(async (projectId: string) => {
     try {
       const response = await characterAPI.list(projectId);
       setCharacters(response.data);
     } catch (error) {
       console.error('Failed to load characters:', error);
     }
-  };
+  }, []);
+
+  const loadInitialData = useCallback(async (projectId: string) => {
+    setPageLoading(true);
+    try {
+      await Promise.all([loadScenes(projectId), loadCharacters(projectId)]);
+    } finally {
+      setPageLoading(false);
+    }
+  }, [loadScenes, loadCharacters]);
+
+  useEffect(() => {
+    if (id) {
+      loadInitialData(id);
+    }
+  }, [id, loadInitialData]);
 
   const handleGenerateAI = async () => {
     if (!id || !aiPrompt) return;
