@@ -6,6 +6,7 @@ API endpoints for managing story elements
 from flask import Blueprint, request, jsonify
 from services.story_bible_service import StoryBibleService
 from firebase_admin import firestore
+import firebase_admin
 from utils.auth import require_auth, require_project_access
 from utils.validation import validate_request
 from schemas.story_bible_schemas import (
@@ -24,11 +25,15 @@ bp = Blueprint('story_bible', __name__)
 
 # Initialize service
 try:
-    db = firestore.client()
-    story_bible_service = StoryBibleService(db)
+    if firebase_admin._apps:
+        db = firestore.client()
+        story_bible_service = StoryBibleService(db)
+    else:
+        # If firebase not init, use None
+        print("Warning: Firebase not initialized in story_bible.py")
+        story_bible_service = StoryBibleService(None)
 except Exception as e:
-    print(f"Warning: Failed to initialize Firestore client: {e}")
-    db = None
+    print(f"Warning: Failed to initialize Firestore client in story_bible.py: {e}")
     story_bible_service = StoryBibleService(None)
 
 # Project routes

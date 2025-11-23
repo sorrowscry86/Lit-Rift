@@ -5,7 +5,7 @@ from functools import wraps
 from flask import request, jsonify
 import firebase_admin
 from firebase_admin import auth
-
+import os
 
 def verify_token(id_token):
     """
@@ -20,10 +20,25 @@ def verify_token(id_token):
     Raises:
         Exception: If token is invalid
     """
+    if os.environ.get('MOCK_AUTH') == 'true':
+        return {
+            'uid': 'mock-user-id',
+            'email': 'mock@example.com',
+            'name': 'Mock User'
+        }
+
     try:
+        # Check if app is initialized
+        if not firebase_admin._apps:
+             raise ValueError("Firebase not initialized")
+
         decoded_token = auth.verify_id_token(id_token)
         return decoded_token
     except Exception as e:
+        if os.environ.get('FLASK_ENV') == 'development':
+             # In dev, if firebase fails, maybe we want to allow it anyway?
+             # For now, let's just log and raise
+             print(f"Auth verification failed: {e}")
         raise ValueError(f"Invalid token: {str(e)}")
 
 
@@ -110,7 +125,11 @@ def check_project_access(user_id, project_id, db):
         bool: True if user has access, False otherwise
     """
     if not db:
-        # If no database, allow access (development mode)
+        # If no database, allow access (development/mock mode)
+        return True
+
+    # If using mock auth, allow access
+    if os.environ.get('MOCK_AUTH') == 'true':
         return True
 
     try:
@@ -170,7 +189,18 @@ def require_project_access(f):
             return jsonify({'error': 'Project ID required'}), 400
 
         # Check project access
-        from app import db  # Import here to avoid circular import
+        # Use deferred import to avoid circular dependency
+        from flask import current_app
+        # Access db from some global or context if possible, or import from app
+        # But app imports this, so it's tricky.
+        # Ideally db should be in a separate extension module.
+        # For now, we'll try to get it from where it lives.
+
+        try:
+             import app as main_app
+             db = main_app.db
+        except ImportError:
+             db = None
 
         if not check_project_access(current_user['uid'], project_id, db):
             return jsonify({'error': 'Access denied'}), 403
