@@ -62,8 +62,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
 
     - name: Install dependencies
       run: |
@@ -94,8 +92,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
 
     - name: Install dependencies
       run: |
@@ -124,8 +120,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
 
     - name: Install dependencies
       run: |
@@ -135,7 +129,7 @@ jobs:
     - name: Run ESLint
       run: |
         cd frontend
-        npm run build 2>&1 | grep -E "(warning|error)" || echo "No lint issues found"
+        npx eslint src/ --max-warnings=0 || true
 
   type-check:
     name: TypeScript Type Check
@@ -148,8 +142,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
 
     - name: Install dependencies
       run: |
