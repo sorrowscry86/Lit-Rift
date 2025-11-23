@@ -1,16 +1,20 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import CharacterCard from '../../components/StoryBible/CharacterCard';
+import { Character } from '../../services/storyBibleService';
 
 describe('CharacterCard Component', () => {
-  const mockCharacter = {
+  const mockCharacter: Character = {
     id: 'char1',
     name: 'Test Hero',
-    role: 'Protagonist',
     description: 'A brave warrior',
     traits: ['brave', 'strong', 'clever'],
     backstory: 'Born in a small village',
-    notes: 'Main character'
+    notes: 'Main character',
+    relationships: {},
+    appearances: [],
+    created_at: '2023-01-01',
+    updated_at: '2023-01-01'
   };
 
   const mockOnEdit = jest.fn();
@@ -31,7 +35,7 @@ describe('CharacterCard Component', () => {
     );
 
     expect(screen.getByText('Test Hero')).toBeInTheDocument();
-    expect(screen.getByText('Protagonist')).toBeInTheDocument();
+    expect(screen.getByText('A brave warrior')).toBeInTheDocument();
   });
 
   it('displays character traits', () => {
@@ -79,14 +83,17 @@ describe('CharacterCard Component', () => {
   });
 
   it('renders without optional fields', () => {
-    const minimalCharacter = {
+    const minimalCharacter: Character = {
       id: 'char2',
       name: 'Minimal Character',
-      role: 'Supporting',
       description: '',
       traits: [],
       backstory: '',
-      notes: ''
+      notes: '',
+      relationships: {},
+      appearances: [],
+      created_at: '2023-01-01',
+      updated_at: '2023-01-01'
     };
 
     render(
@@ -98,7 +105,6 @@ describe('CharacterCard Component', () => {
     );
 
     expect(screen.getByText('Minimal Character')).toBeInTheDocument();
-    expect(screen.getByText('Supporting')).toBeInTheDocument();
   });
 
   it('displays description when present', () => {
