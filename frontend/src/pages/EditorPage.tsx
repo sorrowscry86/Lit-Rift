@@ -20,6 +20,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { sceneAPI, Scene, characterAPI, Character } from '../services/storyBibleService';
 import { editorAPI } from '../services/editorService';
+import EditorPageSkeleton from '../components/EditorPageSkeleton';
 
 const EditorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,13 +33,22 @@ const EditorPage: React.FC = () => {
   const [length, setLength] = useState('medium');
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
     if (id) {
-      loadScenes(id);
-      loadCharacters(id);
+      loadInitialData(id);
     }
   }, [id]);
+
+  const loadInitialData = async (projectId: string) => {
+    setPageLoading(true);
+    try {
+      await Promise.all([loadScenes(projectId), loadCharacters(projectId)]);
+    } finally {
+      setPageLoading(false);
+    }
+  };
 
   const loadScenes = async (projectId: string) => {
     try {
@@ -115,6 +125,10 @@ const EditorPage: React.FC = () => {
       console.error('Failed to create scene:', error);
     }
   };
+
+  if (pageLoading) {
+    return <EditorPageSkeleton />;
+  }
 
   return (
     <Box>

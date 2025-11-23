@@ -1,6 +1,5 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Box } from '@mui/material';
 import './App.css';
@@ -9,6 +8,7 @@ import './styles/accessibility.css';
 // Contexts
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 // Components (keep these as direct imports - small and always needed)
 import ProtectedRoute from './components/ProtectedRoute';
@@ -16,6 +16,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ErrorFallback from './components/ErrorFallback';
 import LoadingSpinner from './components/LoadingSpinner';
 import SkipToContent from './components/SkipToContent';
+import OfflineBanner from './components/OfflineBanner';
 import { logReactError } from './utils/errorLogger';
 
 // Lazy-loaded Pages (code splitting by route)
@@ -29,25 +30,6 @@ const StoryBiblePage = lazy(() => import('./pages/StoryBiblePage'));
 const VisualPlanningPage = lazy(() => import('./pages/VisualPlanningPage').then(module => ({ default: module.VisualPlanningPage })));
 const ContinuityPage = lazy(() => import('./pages/ContinuityPage').then(module => ({ default: module.ContinuityPage })));
 
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#6366f1',
-    },
-    secondary: {
-      main: '#ec4899',
-    },
-    background: {
-      default: '#0f172a',
-      paper: '#1e293b',
-    },
-  },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-  },
-});
-
 function App() {
   const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
     // Log error to error tracking service
@@ -58,9 +40,10 @@ function App() {
 
   return (
     <ErrorBoundary fallback={<ErrorFallback />} onError={handleError}>
-      <ThemeProvider theme={darkTheme}>
+      <ThemeProvider>
         <CssBaseline />
         <SkipToContent />
+        <OfflineBanner />
         <ToastProvider>
           <AuthProvider>
             <Router>

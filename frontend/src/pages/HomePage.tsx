@@ -64,16 +64,46 @@ const HomePage: React.FC = () => {
   };
 
   const handleCreateProject = async () => {
+    // Optimistic UI: Create temporary project with optimistic ID
+    const optimisticId = `temp-${Date.now()}`;
+    const optimisticProject: Project = {
+      id: optimisticId,
+      title: newProject.title,
+      author: newProject.author,
+      genre: newProject.genre || 'Unspecified',
+      description: newProject.description || '',
+      target_word_count: 50000,
+      current_word_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
     try {
       setCreating(true);
-      const response = await projectAPI.create(newProject);
-      setProjects([...projects, response.data]);
+
+      // Immediately add optimistic project to UI
+      setProjects([...projects, optimisticProject]);
       setOpenDialog(false);
       setNewProject({ title: '', author: '', genre: '', description: '' });
+
+      // Make API call
+      const response = await projectAPI.create(newProject);
+
+      // Replace optimistic project with real data
+      setProjects(prevProjects =>
+        prevProjects.map(p => p.id === optimisticId ? response.data : p)
+      );
+
       showSuccess(`Project "${response.data.title}" created successfully!`);
       navigate(`/project/${response.data.id}`);
     } catch (err: any) {
       console.error('Failed to create project:', err);
+
+      // Rollback: Remove optimistic project on error
+      setProjects(prevProjects =>
+        prevProjects.filter(p => p.id !== optimisticId)
+      );
+
       const errorMessage = err.response?.data?.error || 'Failed to create project. Please try again.';
       showError(errorMessage);
       logError(err, {
@@ -81,6 +111,10 @@ const HomePage: React.FC = () => {
         action: 'createProject',
         projectData: newProject,
       });
+
+      // Reopen dialog so user can retry
+      setOpenDialog(true);
+      setNewProject(newProject);
     } finally {
       setCreating(false);
     }

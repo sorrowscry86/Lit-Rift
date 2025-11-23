@@ -14,8 +14,11 @@ import {
 import {
   Logout,
   Settings,
+  Brightness4,
+  Brightness7,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 /**
  * UserMenu component - Displays user profile menu with logout
@@ -28,6 +31,7 @@ import { useAuth } from '../contexts/AuthContext';
  */
 export default function UserMenu() {
   const { currentUser, logout } = useAuth();
+  const { mode, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -115,6 +119,14 @@ export default function UserMenu() {
             <Settings fontSize="small" />
           </ListItemIcon>
           <ListItemText>Settings</ListItemText>
+        </MenuItem>
+
+        {/* Theme toggle */}
+        <MenuItem onClick={toggleTheme}>
+          <ListItemIcon>
+            {mode === 'dark' ? <Brightness7 fontSize="small" /> : <Brightness4 fontSize="small" />}
+          </ListItemIcon>
+          <ListItemText>{mode === 'dark' ? 'Light Mode' : 'Dark Mode'}</ListItemText>
         </MenuItem>
 
         <Divider />
