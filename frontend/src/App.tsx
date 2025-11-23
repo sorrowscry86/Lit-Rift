@@ -29,6 +29,7 @@ const EditorPage = lazy(() => import('./pages/EditorPage'));
 const StoryBiblePage = lazy(() => import('./pages/StoryBiblePage'));
 const VisualPlanningPage = lazy(() => import('./pages/VisualPlanningPage').then(module => ({ default: module.VisualPlanningPage })));
 const ContinuityPage = lazy(() => import('./pages/ContinuityPage').then(module => ({ default: module.ContinuityPage })));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 
 function App() {
   const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
@@ -101,6 +102,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <ContinuityPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <SettingsPage />
                     </ProtectedRoute>
                   }
                 />

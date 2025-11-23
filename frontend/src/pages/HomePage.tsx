@@ -72,6 +72,7 @@ const HomePage: React.FC = () => {
       author: newProject.author,
       genre: newProject.genre || 'Unspecified',
       description: newProject.description || '',
+      status: 'draft',
       target_word_count: 50000,
       current_word_count: 0,
       created_at: new Date().toISOString(),

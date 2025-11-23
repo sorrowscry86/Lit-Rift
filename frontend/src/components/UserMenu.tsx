@@ -55,8 +55,7 @@ export default function UserMenu() {
 
   const handleProfile = () => {
     handleMenuClose();
-    // TODO: Navigate to profile page when implemented
-    // navigate('/profile');
+    navigate('/settings');
   };
 
   if (!currentUser) {
@@ -113,8 +112,8 @@ export default function UserMenu() {
 
         <Divider />
 
-        {/* Profile settings - placeholder */}
-        <MenuItem onClick={handleProfile} disabled>
+        {/* Settings */}
+        <MenuItem onClick={handleProfile}>
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>

@@ -6,9 +6,13 @@ import reportWebVitals from './reportWebVitals';
 import { logPerformanceMetric } from './utils/performanceMonitoring';
 import { initSentry } from './config/sentry';
 import * as serviceWorkerRegistration from './utils/serviceWorkerRegistration';
+import { analytics } from './utils/analytics';
 
 // Initialize Sentry for error tracking (before anything else)
 initSentry();
+
+// Initialize Analytics
+analytics.init();
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

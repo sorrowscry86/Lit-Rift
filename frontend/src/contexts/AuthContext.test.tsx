@@ -57,8 +57,10 @@ describe('AuthContext', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Default mock for onAuthStateChanged - no user logged in
-    mockOnAuthStateChanged.mockImplementation((auth, callback) => {
-      callback(null);
+    mockOnAuthStateChanged.mockImplementation((auth, callback: any) => {
+      if (typeof callback === 'function') {
+        callback(null);
+      }
       return jest.fn(); // unsubscribe function
     });
   });
@@ -121,7 +123,7 @@ describe('AuthContext', () => {
   describe('Authentication State', () => {
     test('updates currentUser when auth state changes to logged in', async () => {
       let authCallback: any;
-      mockOnAuthStateChanged.mockImplementation((auth, callback) => {
+      mockOnAuthStateChanged.mockImplementation((auth, callback: any) => {
         authCallback = callback;
         callback(null); // Initially no user
         return jest.fn();
@@ -148,7 +150,7 @@ describe('AuthContext', () => {
 
     test('updates currentUser when auth state changes to logged out', async () => {
       let authCallback: any;
-      mockOnAuthStateChanged.mockImplementation((auth, callback) => {
+      mockOnAuthStateChanged.mockImplementation((auth, callback: any) => {
         authCallback = callback;
         callback(mockUser); // Initially logged in
         return jest.fn();
@@ -175,7 +177,7 @@ describe('AuthContext', () => {
     });
 
     test('sets Sentry user context when user logs in', async () => {
-      mockOnAuthStateChanged.mockImplementation((auth, callback) => {
+      mockOnAuthStateChanged.mockImplementation((auth, callback: any) => {
         callback(mockUser);
         return jest.fn();
       });
@@ -196,7 +198,7 @@ describe('AuthContext', () => {
     });
 
     test('clears Sentry user context when user logs out', async () => {
-      mockOnAuthStateChanged.mockImplementation((auth, callback) => {
+      mockOnAuthStateChanged.mockImplementation((auth, callback: any) => {
         callback(null);
         return jest.fn();
       });
@@ -434,7 +436,7 @@ describe('AuthContext', () => {
         getIdToken: jest.fn().mockRejectedValue(new Error('Token expired')),
       };
 
-      mockOnAuthStateChanged.mockImplementation((auth, callback) => {
+      mockOnAuthStateChanged.mockImplementation((auth, callback: any) => {
         callback(mockUserWithFailingToken);
         return jest.fn();
       });
