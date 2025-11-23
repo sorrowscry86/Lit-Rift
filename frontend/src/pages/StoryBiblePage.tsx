@@ -31,6 +31,7 @@ import {
   LoreEntry,
   PlotPoint,
 } from '../services/storyBibleService';
+import StoryBiblePageSkeleton from '../components/StoryBiblePageSkeleton';
 
 const StoryBiblePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +43,7 @@ const StoryBiblePage: React.FC = () => {
   const [plotPoints, setPlotPoints] = useState<PlotPoint[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogType, setDialogType] = useState<'character' | 'location' | 'lore' | 'plot'>('character');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (id) {
@@ -50,6 +52,7 @@ const StoryBiblePage: React.FC = () => {
   }, [id]);
 
   const loadAll = async (projectId: string) => {
+    setLoading(true);
     try {
       const [charRes, locRes, loreRes, plotRes] = await Promise.all([
         characterAPI.list(projectId),
@@ -63,6 +66,8 @@ const StoryBiblePage: React.FC = () => {
       setPlotPoints(plotRes.data);
     } catch (error) {
       console.error('Failed to load Story Bible:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -95,6 +100,10 @@ const StoryBiblePage: React.FC = () => {
       console.error('Failed to create location:', error);
     }
   };
+
+  if (loading) {
+    return <StoryBiblePageSkeleton />;
+  }
 
   return (
     <Box>

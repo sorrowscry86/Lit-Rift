@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -20,6 +20,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { sceneAPI, Scene, characterAPI, Character } from '../services/storyBibleService';
 import { editorAPI } from '../services/editorService';
+import EditorPageSkeleton from '../components/EditorPageSkeleton';
 
 const EditorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,15 +33,9 @@ const EditorPage: React.FC = () => {
   const [length, setLength] = useState('medium');
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
-  useEffect(() => {
-    if (id) {
-      loadScenes(id);
-      loadCharacters(id);
-    }
-  }, [id]);
-
-  const loadScenes = async (projectId: string) => {
+  const loadScenes = useCallback(async (projectId: string) => {
     try {
       const response = await sceneAPI.list(projectId);
       setScenes(response.data);
@@ -51,16 +46,31 @@ const EditorPage: React.FC = () => {
     } catch (error) {
       console.error('Failed to load scenes:', error);
     }
-  };
+  }, []);
 
-  const loadCharacters = async (projectId: string) => {
+  const loadCharacters = useCallback(async (projectId: string) => {
     try {
       const response = await characterAPI.list(projectId);
       setCharacters(response.data);
     } catch (error) {
       console.error('Failed to load characters:', error);
     }
-  };
+  }, []);
+
+  const loadInitialData = useCallback(async (projectId: string) => {
+    setPageLoading(true);
+    try {
+      await Promise.all([loadScenes(projectId), loadCharacters(projectId)]);
+    } finally {
+      setPageLoading(false);
+    }
+  }, [loadScenes, loadCharacters]);
+
+  useEffect(() => {
+    if (id) {
+      loadInitialData(id);
+    }
+  }, [id, loadInitialData]);
 
   const handleGenerateAI = async () => {
     if (!id || !aiPrompt) return;
@@ -115,6 +125,10 @@ const EditorPage: React.FC = () => {
       console.error('Failed to create scene:', error);
     }
   };
+
+  if (pageLoading) {
+    return <EditorPageSkeleton />;
+  }
 
   return (
     <Box>

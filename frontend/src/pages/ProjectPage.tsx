@@ -16,6 +16,7 @@ import BookIcon from '@mui/icons-material/Book';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import { projectAPI, Project } from '../services/storyBibleService';
+import ProjectPageSkeleton from '../components/ProjectPageSkeleton';
 
 const ProjectPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,13 +40,7 @@ const ProjectPage: React.FC = () => {
   };
 
   if (!project) {
-    return (
-      <Container>
-        <Box sx={{ py: 4 }}>
-          <Typography>Loading...</Typography>
-        </Box>
-      </Container>
-    );
+    return <ProjectPageSkeleton />;
   }
 
   return (
