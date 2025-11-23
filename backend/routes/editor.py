@@ -7,6 +7,7 @@ from flask import Blueprint, request, jsonify
 from services.ai_editor_service import AIEditorService
 from services.story_bible_service import StoryBibleService
 from firebase_admin import firestore
+import firebase_admin
 from utils.rate_limiter import ai_rate_limit
 from utils.auth import require_auth
 from utils.validation import validate_request
@@ -25,10 +26,14 @@ bp = Blueprint('editor', __name__)
 ai_editor_service = AIEditorService()
 
 try:
-    db = firestore.client()
-    story_bible_service = StoryBibleService(db)
+    if firebase_admin._apps:
+        db = firestore.client()
+        story_bible_service = StoryBibleService(db)
+    else:
+        print("Warning: Firebase not initialized in editor.py")
+        story_bible_service = StoryBibleService(None)
 except Exception as e:
-    print(f"Warning: Failed to initialize Firestore client: {e}")
+    print(f"Warning: Failed to initialize Firestore client in editor.py: {e}")
     db = None
     story_bible_service = StoryBibleService(None)
 
