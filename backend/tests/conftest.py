@@ -10,31 +10,19 @@ from unittest.mock import Mock, MagicMock, patch
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Mock external dependencies before imports
-sys.modules['google'] = MagicMock()
+# We only mock services that require external connection or credentials
 sys.modules['google.generativeai'] = MagicMock()
 sys.modules['firebase_admin'] = MagicMock()
 sys.modules['firebase_admin.credentials'] = MagicMock()
 sys.modules['firebase_admin.firestore'] = MagicMock()
-sys.modules['flask'] = MagicMock()
-sys.modules['flask_cors'] = MagicMock()
-
+# Do NOT mock flask or flask_cors as we want to test the app structure
 
 @pytest.fixture
 def mock_firestore():
     """Mock Firestore client"""
     mock_db = MagicMock()
-
-    # Mock collection behavior
-    def mock_collection(collection_name):
-        mock_col = MagicMock()
-        mock_col.document = MagicMock(return_value=MagicMock())
-        mock_col.stream = MagicMock(return_value=[])
-        mock_col.where = MagicMock(return_value=mock_col)
-        mock_col.order_by = MagicMock(return_value=mock_col)
-        mock_col.limit = MagicMock(return_value=mock_col)
-        return mock_col
-
-    mock_db.collection = mock_collection
+    # Ensure nested collections work recursively and return consistent mocks
+    # This allows: db.collection('a').document('b').collection('c').stream()
     return mock_db
 
 
@@ -129,8 +117,7 @@ def sample_scene_data():
 def mock_story_bible_service(mock_firestore):
     """Mock StoryBibleService with Firestore"""
     from services.story_bible_service import StoryBibleService
-    service = StoryBibleService()
-    service.db = mock_firestore
+    service = StoryBibleService(mock_firestore)
     return service
 
 
@@ -165,3 +152,4 @@ def mock_env_vars(monkeypatch):
     """Mock environment variables for all tests"""
     monkeypatch.setenv('FLASK_ENV', 'testing')
     monkeypatch.setenv('GOOGLE_API_KEY', 'test_api_key')
+    monkeypatch.setenv('MOCK_AUTH', 'true')

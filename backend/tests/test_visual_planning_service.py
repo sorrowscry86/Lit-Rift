@@ -11,8 +11,7 @@ class TestVisualPlanningService:
 
     def test_get_corkboard(self, mock_firestore):
         """Test getting corkboard layout"""
-        service = VisualPlanningService()
-        service.db = mock_firestore
+        service = VisualPlanningService(mock_firestore)
 
         # Mock corkboard document
         mock_doc = MagicMock()
@@ -33,8 +32,7 @@ class TestVisualPlanningService:
 
     def test_save_corkboard(self, mock_firestore):
         """Test saving corkboard layout"""
-        service = VisualPlanningService()
-        service.db = mock_firestore
+        service = VisualPlanningService(mock_firestore)
 
         mock_doc_ref = MagicMock()
         mock_doc_ref.set = MagicMock()
@@ -51,8 +49,7 @@ class TestVisualPlanningService:
 
     def test_generate_matrix(self, mock_firestore):
         """Test matrix generation from plot points"""
-        service = VisualPlanningService()
-        service.db = mock_firestore
+        service = VisualPlanningService(mock_firestore)
 
         # Mock plot points
         mock_plot1 = MagicMock()
@@ -75,8 +72,7 @@ class TestVisualPlanningService:
 
     def test_update_matrix_cell(self, mock_firestore):
         """Test updating a matrix cell"""
-        service = VisualPlanningService()
-        service.db = mock_firestore
+        service = VisualPlanningService(mock_firestore)
 
         # Mock existing matrix
         mock_doc = MagicMock()
@@ -97,8 +93,7 @@ class TestVisualPlanningService:
 
     def test_generate_outline(self, mock_firestore):
         """Test outline generation from plot points"""
-        service = VisualPlanningService()
-        service.db = mock_firestore
+        service = VisualPlanningService(mock_firestore)
 
         # Mock plot points
         plots = [
@@ -119,8 +114,7 @@ class TestVisualPlanningService:
 
     def test_save_outline(self, mock_firestore):
         """Test saving outline"""
-        service = VisualPlanningService()
-        service.db = mock_firestore
+        service = VisualPlanningService(mock_firestore)
 
         mock_doc_ref = MagicMock()
         mock_doc_ref.set = MagicMock()
@@ -137,7 +131,7 @@ class TestVisualPlanningService:
 
     def test_export_outline_to_markdown(self):
         """Test outline markdown export"""
-        service = VisualPlanningService()
+        service = VisualPlanningService(None)
 
         outline = [
             {
@@ -166,8 +160,7 @@ class TestVisualPlanningService:
 
     def test_empty_corkboard(self, mock_firestore):
         """Test getting empty corkboard"""
-        service = VisualPlanningService()
-        service.db = mock_firestore
+        service = VisualPlanningService(mock_firestore)
 
         mock_doc = MagicMock()
         mock_doc.exists = False
@@ -182,8 +175,7 @@ class TestVisualPlanningService:
 
     def test_without_firestore(self):
         """Test service without Firestore"""
-        service = VisualPlanningService()
-        service.db = None
+        service = VisualPlanningService(None)
 
         result = service.get_corkboard('test_project')
 
@@ -193,8 +185,7 @@ class TestVisualPlanningService:
 
     def test_matrix_with_no_plot_points(self, mock_firestore):
         """Test matrix generation with no plot points"""
-        service = VisualPlanningService()
-        service.db = mock_firestore
+        service = VisualPlanningService(mock_firestore)
 
         mock_firestore.collection().document().collection().stream.return_value = []
 
@@ -208,7 +199,7 @@ class TestVisualPlanningService:
 
     def test_nested_outline_structure(self):
         """Test outline with deep nesting"""
-        service = VisualPlanningService()
+        service = VisualPlanningService(None)
 
         outline = [
             {
