@@ -83,12 +83,20 @@ if gemini_api_key:
 else:
     logger.warning("GOOGLE_API_KEY not set. AI features will be limited.")
 
+# Initialize SQLite database for offline-first sync
+try:
+    from db.schema import DatabaseSchema
+    DatabaseSchema.init_database()
+    logger.info("SQLite database initialized successfully")
+except Exception as e:
+    logger.error(f"Failed to initialize SQLite database: {e}")
+
 # Import routes
 # We must ensure routes don't crash if imported and db is None
 # Most routes import 'app' to get 'db', or expect services to have it.
 # We need to make sure services handle db being None.
 
-from routes import story_bible, editor, visual_planning, continuity, inspiration, assets, export_routes, auth
+from routes import story_bible, editor, visual_planning, continuity, inspiration, assets, export_routes, auth, sync
 
 # Register blueprints
 app.register_blueprint(auth.bp, url_prefix='/api/auth')
@@ -99,6 +107,7 @@ app.register_blueprint(continuity.bp, url_prefix='/api/continuity')
 app.register_blueprint(inspiration.bp, url_prefix='/api/inspiration')
 app.register_blueprint(assets.bp, url_prefix='/api/assets')
 app.register_blueprint(export_routes.bp, url_prefix='/api/export')
+app.register_blueprint(sync.bp, url_prefix='/api/sync')
 
 @app.after_request
 def set_security_headers(response):
@@ -120,10 +129,20 @@ def home():
 
 @app.route('/api/health')
 def health():
+    # Check SQLite database
+    sqlite_status = False
+    try:
+        from db.schema import DB_PATH
+        import os
+        sqlite_status = os.path.exists(DB_PATH)
+    except:
+        pass
+
     return jsonify({
         'status': 'healthy',
         'firebase': db is not None,
-        'gemini': gemini_api_key is not None
+        'gemini': gemini_api_key is not None,
+        'sqlite': sqlite_status
     })
 
 if __name__ == '__main__':
