@@ -32,6 +32,7 @@ describe('ProtectedRoute', () => {
       loginWithGoogle: jest.fn(),
       getIdToken: jest.fn().mockResolvedValue('mock-token'),
       loading: false,
+      isOffline: false,
     });
 
     return render(
@@ -120,6 +121,7 @@ describe('ProtectedRoute', () => {
         loginWithGoogle: jest.fn(),
         getIdToken: jest.fn().mockResolvedValue('mock-token'),
         loading: false,
+        isOffline: false,
       });
 
       const { rerender } = render(
@@ -150,6 +152,7 @@ describe('ProtectedRoute', () => {
         loginWithGoogle: jest.fn(),
         getIdToken: jest.fn().mockResolvedValue('mock-token'),
         loading: false,
+        isOffline: false,
       });
 
       rerender(
@@ -189,6 +192,7 @@ describe('ProtectedRoute', () => {
         loginWithGoogle: jest.fn(),
         getIdToken: jest.fn().mockResolvedValue('mock-token'),
         loading: false,
+        isOffline: false,
       });
 
       render(
@@ -221,6 +225,7 @@ describe('ProtectedRoute', () => {
         loginWithGoogle: jest.fn(),
         getIdToken: jest.fn().mockResolvedValue('mock-token'),
         loading: false,
+        isOffline: false,
       });
 
       render(

@@ -24,6 +24,7 @@ describe('LoginPage', () => {
       loginWithGoogle: mockLoginWithGoogle,
       getIdToken: jest.fn().mockResolvedValue(null),
       loading: false,
+      isOffline: false,
     };
 
     return render(
