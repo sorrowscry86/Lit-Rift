@@ -1,6 +1,6 @@
 {
   "name": "lit-rift-desktop",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Lit-Rift Desktop Application - Novel creation tool with AI assistance",
   "main": "main.js",
   "author": "Lit-Rift",
