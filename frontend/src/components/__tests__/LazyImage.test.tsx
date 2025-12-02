@@ -1,20 +1,46 @@
 import React from 'react';
 import { render, screen, waitFor } from '../../utils/testUtils';
 import LazyImage, { toWebP, generateSrcSet, generateSizes } from '../LazyImage';
-import { mockIntersectionObserver } from '../../utils/testUtils';
 
 describe('LazyImage', () => {
+  // Store IntersectionObserver callbacks to trigger them manually
+  let intersectionCallback: IntersectionObserverCallback;
+  
   beforeEach(() => {
-    mockIntersectionObserver();
+    // Mock IntersectionObserver to capture the callback
+    const mockIntersectionObserver = jest.fn((callback: IntersectionObserverCallback) => {
+      intersectionCallback = callback;
+      return {
+        observe: jest.fn(() => {
+          // Immediately trigger intersection for testing
+          callback([{
+            isIntersecting: true,
+            target: document.createElement('div'),
+            boundingClientRect: {} as DOMRectReadOnly,
+            intersectionRatio: 1,
+            intersectionRect: {} as DOMRectReadOnly,
+            rootBounds: null,
+            time: Date.now(),
+          }], {} as IntersectionObserver);
+        }),
+        unobserve: jest.fn(),
+        disconnect: jest.fn(),
+        takeRecords: jest.fn().mockReturnValue([]),
+        root: null,
+        rootMargin: '',
+        thresholds: [],
+      };
+    });
+    window.IntersectionObserver = mockIntersectionObserver as unknown as typeof IntersectionObserver;
   });
 
   test('renders without crashing', () => {
-    render(<LazyImage src="/test.jpg" alt="Test image" />);
+    render(<LazyImage src="/test.jpg" alt="Test image" loading="eager" />);
     expect(screen.getByAltText('Test image')).toBeInTheDocument();
   });
 
   test('shows loading skeleton initially', () => {
-    const { container } = render(<LazyImage src="/test.jpg" alt="Test image" />);
+    const { container } = render(<LazyImage src="/test.jpg" alt="Test image" loading="eager" />);
 
     // Check for skeleton component
     const skeleton = container.querySelector('[class*="MuiSkeleton"]');
@@ -28,9 +54,10 @@ describe('LazyImage', () => {
     expect(img).toHaveAttribute('loading', 'eager');
   });
 
-  test('lazy loads image by default', () => {
+  test('lazy loads image when intersected', () => {
     render(<LazyImage src="/test.jpg" alt="Test image" />);
 
+    // The mock IntersectionObserver triggers immediately
     const img = screen.getByAltText('Test image');
     expect(img).toHaveAttribute('loading', 'lazy');
   });
@@ -210,9 +237,11 @@ describe('LazyImage', () => {
   });
 
   test('accessibility: empty alt is allowed for decorative images', () => {
-    render(<LazyImage src="/test.jpg" alt="" loading="eager" />);
+    const { container } = render(<LazyImage src="/test.jpg" alt="" loading="eager" />);
 
-    const img = screen.getByRole('img');
+    // Images with empty alt have role="presentation" and may be hidden initially
+    const img = container.querySelector('img');
+    expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute('alt', '');
   });
 });

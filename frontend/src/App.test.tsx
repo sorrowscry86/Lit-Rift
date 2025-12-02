@@ -1,24 +1,8 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import App from './App';
 import { AuthContext } from './contexts/AuthContext';
-
-// Mock AuthProvider to avoid loading state issue
-const MockAuthProvider = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <AuthContext.Provider value={{
-      currentUser: null,
-      loading: false,
-      login: jest.fn(),
-      signup: jest.fn(),
-      logout: jest.fn(),
-      loginWithGoogle: jest.fn(),
-      getIdToken: jest.fn()
-    }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
 
 // We need to mock the real AuthProvider used in App.tsx
 jest.mock('./contexts/AuthContext', () => ({
@@ -32,10 +16,40 @@ jest.mock('./contexts/AuthContext', () => ({
   })
 }));
 
-test('renders app without crashing', () => {
-  render(<App />);
-  // The app renders a main content box with id "main-content"
-  // and a SkipToContent link.
-  const mainElement = screen.getByRole('main');
-  expect(mainElement).toBeInTheDocument();
+// Mock lazy loaded components to avoid Suspense issues
+jest.mock('./pages/LoginPage', () => {
+  return function MockLoginPage() {
+    return <div data-testid="login-page">Login Page</div>;
+  };
+});
+
+jest.mock('./pages/SignupPage', () => {
+  return function MockSignupPage() {
+    return <div data-testid="signup-page">Signup Page</div>;
+  };
+});
+
+jest.mock('./pages/PasswordResetPage', () => {
+  return function MockPasswordResetPage() {
+    return <div data-testid="password-reset-page">Password Reset Page</div>;
+  };
+});
+
+jest.mock('./pages/HomePage', () => {
+  return function MockHomePage() {
+    return <div data-testid="home-page">Home Page</div>;
+  };
+});
+
+test('renders app without crashing', async () => {
+  await act(async () => {
+    render(<App />);
+  });
+  
+  // Wait for the app to fully render
+  await waitFor(() => {
+    // The app renders a main content box with id "main-content"
+    const mainElement = screen.getByRole('main');
+    expect(mainElement).toBeInTheDocument();
+  });
 });
