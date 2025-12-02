@@ -47,9 +47,11 @@ class TestContinuityTrackerService:
             call_count = [0]
 
             def mock_stream(*args, **kwargs):
-                result = calls[call_count[0]]
-                call_count[0] += 1
-                return result
+                if call_count[0] < len(calls):
+                    result = calls[call_count[0]]
+                    call_count[0] += 1
+                    return result
+                return []
 
             return mock_stream
 

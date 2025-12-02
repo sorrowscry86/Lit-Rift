@@ -4,6 +4,7 @@ Request validation utilities using Pydantic
 
 from functools import wraps
 from flask import request, jsonify
+from werkzeug.exceptions import BadRequest
 from pydantic import BaseModel, ValidationError
 from typing import Type, Callable
 import logging
@@ -62,6 +63,12 @@ def validate_request(schema: Type[BaseModel]) -> Callable:
                 return jsonify({
                     'error': 'Validation failed',
                     'details': errors
+                }), 400
+
+            except BadRequest as e:
+                return jsonify({
+                    'error': 'Invalid JSON',
+                    'details': str(e)
                 }), 400
 
             except Exception as e:

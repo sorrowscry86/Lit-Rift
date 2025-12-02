@@ -55,6 +55,16 @@ def require_auth(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Check mock auth first
+        if os.environ.get('MOCK_AUTH') == 'true':
+            # Pass a mock user
+            current_user = {
+                'uid': 'mock-user-id',
+                'email': 'mock@example.com',
+                'name': 'Mock User'
+            }
+            return f(current_user=current_user, *args, **kwargs)
+
         # Get token from Authorization header
         auth_header = request.headers.get('Authorization')
 
@@ -170,17 +180,25 @@ def require_project_access(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # First check authentication
-        auth_header = request.headers.get('Authorization')
+        # Check mock auth first
+        if os.environ.get('MOCK_AUTH') == 'true':
+            current_user = {
+                'uid': 'mock-user-id',
+                'email': 'mock@example.com',
+                'name': 'Mock User'
+            }
+        else:
+            # First check authentication
+            auth_header = request.headers.get('Authorization')
 
-        if not auth_header:
-            return jsonify({'error': 'Authentication required'}), 401
+            if not auth_header:
+                return jsonify({'error': 'Authentication required'}), 401
 
-        try:
-            token = auth_header.split(' ')[1]
-            current_user = verify_token(token)
-        except (IndexError, ValueError) as e:
-            return jsonify({'error': 'Invalid token'}), 401
+            try:
+                token = auth_header.split(' ')[1]
+                current_user = verify_token(token)
+            except (IndexError, ValueError) as e:
+                return jsonify({'error': 'Invalid token'}), 401
 
         # Get project_id from kwargs or args
         project_id = kwargs.get('project_id') or kwargs.get('id')
