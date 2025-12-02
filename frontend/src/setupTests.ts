@@ -19,6 +19,7 @@ jest.mock('./config/firebase', () => ({
     currentUser: null,
     onAuthStateChanged: jest.fn(),
   },
+  isOfflineMode: false,
 }));
 
 // Mock Sentry to avoid initialization in tests

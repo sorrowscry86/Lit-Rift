@@ -18,6 +18,7 @@ jest.mock('firebase/auth', () => ({
 // Mock Firebase config
 jest.mock('../config/firebase', () => ({
   auth: {},
+  isOfflineMode: false,
 }));
 
 // Mock Sentry
