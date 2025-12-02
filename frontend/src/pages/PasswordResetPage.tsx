@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '../config/firebase';
+import { auth, isOfflineMode } from '../config/firebase';
 
 export default function PasswordResetPage() {
   const [email, setEmail] = useState('');
@@ -23,6 +23,12 @@ export default function PasswordResetPage() {
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check for offline mode
+    if (isOfflineMode || !auth) {
+      setError('Password reset is not available in offline mode. Please configure Firebase.');
+      return;
+    }
 
     // Validation
     if (!email) {

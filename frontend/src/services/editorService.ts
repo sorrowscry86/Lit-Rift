@@ -16,14 +16,16 @@ const aiApi = axios.create({
 // Add request interceptor for authentication
 aiApi.interceptors.request.use(
   async (config) => {
-    // Get current user and Firebase ID token
-    const user = auth.currentUser;
-    if (user) {
-      try {
-        const token = await user.getIdToken();
-        config.headers.Authorization = `Bearer ${token}`;
-      } catch (error) {
-        console.error('Error getting auth token:', error);
+    // Get current user and Firebase ID token (only if auth is initialized)
+    if (auth) {
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          const token = await user.getIdToken();
+          config.headers.Authorization = `Bearer ${token}`;
+        } catch (error) {
+          console.error('Error getting auth token:', error);
+        }
       }
     }
     return config;

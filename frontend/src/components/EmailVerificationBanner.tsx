@@ -5,7 +5,7 @@ import {
   Snackbar,
   Box,
 } from '@mui/material';
-import { sendEmailVerification } from 'firebase/auth';
+import { sendEmailVerification, User } from 'firebase/auth';
 import { useAuth } from '../contexts/AuthContext';
 
 /**
@@ -15,7 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
  * Allows users to resend verification email
  */
 export default function EmailVerificationBanner() {
-  const { currentUser } = useAuth();
+  const { currentUser, isOffline } = useAuth();
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -27,17 +27,18 @@ export default function EmailVerificationBanner() {
     severity: 'success',
   });
 
-  // Don't show if no user or email is already verified
-  if (!currentUser || currentUser.emailVerified) {
+  // Don't show if no user, email is already verified, or in offline mode
+  if (!currentUser || currentUser.emailVerified || isOffline) {
     return null;
   }
 
   const handleResendVerification = async () => {
-    if (!currentUser) return;
+    if (!currentUser || isOffline) return;
 
     try {
       setLoading(true);
-      await sendEmailVerification(currentUser);
+      // Only Firebase User has sendEmailVerification method
+      await sendEmailVerification(currentUser as User);
 
       setSnackbar({
         open: true,

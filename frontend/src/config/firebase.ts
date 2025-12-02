@@ -1,5 +1,5 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeApp, FirebaseApp } from 'firebase/app';
+import { getAuth, Auth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -10,10 +10,35 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Check if Firebase is properly configured
+const isFirebaseConfigured = (): boolean => {
+  return !!(
+    firebaseConfig.apiKey &&
+    firebaseConfig.apiKey !== 'your_firebase_api_key' &&
+    firebaseConfig.projectId &&
+    firebaseConfig.projectId !== 'your_project_id'
+  );
+};
 
-// Initialize Firebase Authentication
-export const auth = getAuth(app);
+// Flag to indicate if running in offline mode
+export const isOfflineMode = !isFirebaseConfigured();
 
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+
+// Initialize Firebase only if properly configured
+if (isFirebaseConfigured()) {
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    console.log('Firebase initialized successfully');
+  } catch (error) {
+    console.warn('Firebase initialization failed, falling back to offline mode:', error);
+  }
+} else {
+  console.log('Firebase not configured. Running in offline mode with local database (litrift.db).');
+  console.log('To enable cloud sync, configure Firebase in .env file.');
+}
+
+export { auth };
 export default app;

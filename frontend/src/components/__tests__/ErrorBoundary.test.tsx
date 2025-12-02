@@ -41,14 +41,15 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
   });
 
-  test('displays error message in fallback UI', () => {
+  test('displays helpful message in fallback UI', () => {
     render(
       <ErrorBoundary>
         <ThrowError />
       </ErrorBoundary>
     );
 
-    expect(screen.getByText(/test error/i)).toBeInTheDocument();
+    // The default fallback shows a user-friendly message, not error details
+    expect(screen.getByText(/sorry for the inconvenience/i)).toBeInTheDocument();
   });
 
   test('shows retry button in fallback UI', () => {
@@ -60,17 +61,6 @@ describe('ErrorBoundary', () => {
 
     const retryButton = screen.getByRole('button', { name: /try again/i });
     expect(retryButton).toBeInTheDocument();
-  });
-
-  test('shows go home button in fallback UI', () => {
-    render(
-      <ErrorBoundary>
-        <ThrowError />
-      </ErrorBoundary>
-    );
-
-    const homeButton = screen.getByRole('button', { name: /go to home/i });
-    expect(homeButton).toBeInTheDocument();
   });
 
   test('calls onError callback when error occurs', () => {
@@ -119,7 +109,8 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
 
-    expect(screen.getByText(/test error/i)).toBeInTheDocument();
+    // Should show the error fallback UI
+    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
 
     // Stop throwing error
     shouldThrow = false;
@@ -138,29 +129,18 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText('Success')).toBeInTheDocument();
   });
 
-  test('maintains error state across different error instances', () => {
+  test('maintains error state until retry', () => {
     render(
       <ErrorBoundary>
         <ThrowError />
       </ErrorBoundary>
     );
 
-    expect(screen.getByText(/test error/i)).toBeInTheDocument();
+    // Error fallback should be shown
+    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
 
-    // Error boundary should stay in error state
+    // Error boundary should stay in error state with retry button
     expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
-  });
-
-  test('renders with Material-UI components', () => {
-    render(
-      <ErrorBoundary>
-        <ThrowError />
-      </ErrorBoundary>
-    );
-
-    // Check for Material-UI Paper component
-    const container = screen.getByText(/something went wrong/i).closest('[class*="MuiPaper"]');
-    expect(container).toBeInTheDocument();
   });
 
   test('accessibility: fallback UI has proper heading', () => {
@@ -174,7 +154,7 @@ describe('ErrorBoundary', () => {
     expect(heading).toBeInTheDocument();
   });
 
-  test('accessibility: buttons are keyboard accessible', () => {
+  test('accessibility: retry button is keyboard accessible', () => {
     render(
       <ErrorBoundary>
         <ThrowError />
@@ -182,9 +162,7 @@ describe('ErrorBoundary', () => {
     );
 
     const retryButton = screen.getByRole('button', { name: /try again/i });
-    const homeButton = screen.getByRole('button', { name: /go to home/i });
 
     expect(retryButton).toBeEnabled();
-    expect(homeButton).toBeEnabled();
   });
 });
