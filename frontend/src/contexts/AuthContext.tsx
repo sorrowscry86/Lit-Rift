@@ -54,20 +54,49 @@ const getOfflineUser = (): OfflineUser | null => {
   const storedUser = localStorage.getItem('litrift_offline_user');
   if (storedUser) {
     try {
-      return JSON.parse(storedUser);
+      const parsed = JSON.parse(storedUser);
+      // Validate the structure matches OfflineUser interface
+      if (parsed && typeof parsed.uid === 'string' && typeof parsed.email === 'string') {
+        return {
+          uid: parsed.uid,
+          email: parsed.email,
+          displayName: parsed.displayName || null,
+          emailVerified: parsed.emailVerified ?? true,
+          getIdToken: async () => 'offline_token',
+        };
+      }
     } catch {
-      return null;
+      // Invalid JSON in localStorage
     }
   }
   return null;
 };
 
 const saveOfflineUser = (user: OfflineUser) => {
-  localStorage.setItem('litrift_offline_user', JSON.stringify(user));
+  localStorage.setItem('litrift_offline_user', JSON.stringify({
+    uid: user.uid,
+    email: user.email,
+    displayName: user.displayName,
+    emailVerified: user.emailVerified,
+  }));
 };
 
 const clearOfflineUser = () => {
   localStorage.removeItem('litrift_offline_user');
+};
+
+// Helper to create an offline user from email
+const createOfflineUser = (email: string): OfflineUser => {
+  // Extract display name from email, handling edge cases
+  const displayName = email.includes('@') ? email.split('@')[0] : email;
+  
+  return {
+    uid: `offline_${Date.now()}`,
+    email,
+    displayName,
+    emailVerified: true,
+    getIdToken: async () => 'offline_token',
+  };
 };
 
 export function AuthProvider({ children }: AuthProviderProps) {
@@ -78,13 +107,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (email: string, password: string) => {
     if (isOfflineMode) {
       // Offline mode: create local user session
-      const offlineUser: OfflineUser = {
-        uid: `offline_${Date.now()}`,
-        email,
-        displayName: email.split('@')[0],
-        emailVerified: true,
-        getIdToken: async () => 'offline_token',
-      };
+      const offlineUser = createOfflineUser(email);
       saveOfflineUser(offlineUser);
       setCurrentUser(offlineUser);
       return;
@@ -100,13 +123,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signup = async (email: string, password: string) => {
     if (isOfflineMode) {
       // Offline mode: create local user
-      const offlineUser: OfflineUser = {
-        uid: `offline_${Date.now()}`,
-        email,
-        displayName: email.split('@')[0],
-        emailVerified: true,
-        getIdToken: async () => 'offline_token',
-      };
+      const offlineUser = createOfflineUser(email);
       saveOfflineUser(offlineUser);
       setCurrentUser(offlineUser);
       return;
