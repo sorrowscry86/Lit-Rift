@@ -1,8 +1,10 @@
 import os
 import json
 import logging
-from flask import Flask, jsonify
+import asyncio
+from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask_socketio import SocketIO, emit, join_room, leave_room
 from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -30,6 +32,9 @@ def validate_config():
 
 app = Flask(__name__)
 CORS(app)
+
+# Initialize SocketIO for real-time conflict notifications
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 # Validate configuration
 validate_config()
@@ -86,10 +91,50 @@ else:
 # Initialize SQLite database for offline-first sync
 try:
     from db.schema import DatabaseSchema
+    from db.connection import DatabaseManager
     DatabaseSchema.init_database()
+    db_manager = DatabaseManager()
     logger.info("SQLite database initialized successfully")
 except Exception as e:
     logger.error(f"Failed to initialize SQLite database: {e}")
+    db_manager = None
+
+# Initialize device ID for sync attribution
+try:
+    from utils.device import DeviceManager
+    device_id = DeviceManager.get_or_create_device_id()
+    device_name = DeviceManager.get_device_name()
+    app_version = DeviceManager.get_app_version()
+    DeviceManager.save_device_info(device_id, device_name, app_version)
+
+    # Store device info in app config
+    app.config['DEVICE_ID'] = device_id
+    app.config['DEVICE_NAME'] = device_name
+    app.config['APP_VERSION'] = app_version
+
+    logger.info(f"Device initialized: {device_name} ({device_id[:8]}...)")
+except Exception as e:
+    logger.error(f"Failed to initialize device ID: {e}")
+    app.config['DEVICE_ID'] = 'unknown'
+
+# Initialize sync services for background worker
+try:
+    from services.sync_service import SyncService
+    from services.firebase_sync import FirebaseSyncAdapter
+    from services.background_sync import BackgroundSyncWorker
+
+    firebase_adapter = FirebaseSyncAdapter(db) if db else None
+    sync_service = None  # Will be created per-user
+
+    # Global background workers (one per user)
+    background_workers = {}
+
+    logger.info("Sync services initialized")
+except Exception as e:
+    logger.error(f"Failed to initialize sync services: {e}")
+    firebase_adapter = None
+    sync_service = None
+    background_workers = {}
 
 # Import routes
 # We must ensure routes don't crash if imported and db is None
@@ -122,9 +167,11 @@ def set_security_headers(response):
 def home():
     return jsonify({
         'message': 'Lit-Rift API',
-        'version': '1.0.0',
+        'version': app.config.get('APP_VERSION', '1.0.0'),
         'status': 'running',
-        'db_status': 'connected' if db else 'mock/disconnected'
+        'db_status': 'connected' if db else 'mock/disconnected',
+        'device_id': app.config.get('DEVICE_ID', 'unknown')[:8] + '...',
+        'device_name': app.config.get('DEVICE_NAME', 'Unknown')
     })
 
 @app.route('/api/health')
@@ -142,10 +189,143 @@ def health():
         'status': 'healthy',
         'firebase': db is not None,
         'gemini': gemini_api_key is not None,
-        'sqlite': sqlite_status
+        'sqlite': sqlite_status,
+        'device_id': app.config.get('DEVICE_ID', 'unknown')[:8] + '...',
+        'version': app.config.get('APP_VERSION', '1.0.0')
     })
+
+# Background Sync Worker Endpoints
+
+def run_worker_async(worker):
+    """Helper to run async worker in a thread"""
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(worker.run())
+
+@app.route('/api/sync/start-worker', methods=['POST'])
+def start_background_worker():
+    """Start background sync worker for authenticated user"""
+    user_id = request.headers.get('X-User-ID')
+
+    if not user_id:
+        return jsonify({'error': 'Missing user_id'}), 400
+
+    if not db_manager or not firebase_adapter:
+        return jsonify({'error': 'Sync services not available'}), 503
+
+    if user_id in background_workers:
+        return jsonify({'status': 'already running'}), 200
+
+    try:
+        # Create sync service for this user
+        device_id = app.config.get('DEVICE_ID', 'unknown')
+        user_sync_service = SyncService(db_manager, device_id)
+
+        # Define conflict callback
+        def on_conflict(conflict):
+            """Emit conflict event to frontend via WebSocket"""
+            try:
+                socketio.emit('sync:conflict', {
+                    'conflict_id': conflict['id'],
+                    'doc_id': conflict['document_id'],
+                    'local_version': conflict['local_version'],
+                    'cloud_version': conflict['cloud_version'],
+                    'local_device': conflict['local_device_id'],
+                    'cloud_device': conflict['cloud_device_id'],
+                    'local_timestamp': conflict['local_timestamp'],
+                    'cloud_timestamp': conflict['cloud_timestamp']
+                }, room=f'user_{user_id}')
+            except Exception as e:
+                logger.error(f"Failed to emit conflict event: {e}")
+
+        # Create worker
+        worker = BackgroundSyncWorker(
+            db_manager,
+            user_sync_service,
+            firebase_adapter,
+            user_id,
+            device_id,
+            on_conflict_callback=on_conflict,
+            sync_interval=30
+        )
+
+        background_workers[user_id] = worker
+
+        # Start worker in background thread
+        import threading
+        thread = threading.Thread(target=run_worker_async, args=(worker,))
+        thread.daemon = True
+        thread.start()
+
+        logger.info(f"Background sync started for user {user_id}")
+        return jsonify({'status': 'background sync started'}), 200
+
+    except Exception as e:
+        logger.error(f"Failed to start background worker: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/sync/worker-status', methods=['GET'])
+def get_worker_status():
+    """Get sync worker status for authenticated user"""
+    user_id = request.headers.get('X-User-ID')
+
+    if not user_id:
+        return jsonify({'error': 'Missing user_id'}), 400
+
+    worker = background_workers.get(user_id)
+
+    if not worker:
+        return jsonify({'status': 'not running'}), 200
+
+    return jsonify(worker.get_status()), 200
+
+# WebSocket handlers
+
+@socketio.on('connect')
+def handle_connect(auth):
+    """Handle WebSocket connection"""
+    user_id = auth.get('user_id') if auth else None
+    if user_id:
+        join_room(f'user_{user_id}')
+        logger.info(f"User {user_id} connected to sync WebSocket")
+    else:
+        logger.warning("WebSocket connection without user_id")
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    """Handle WebSocket disconnection"""
+    logger.info("User disconnected from sync WebSocket")
+
+@socketio.on('join')
+def handle_join(data):
+    """Handle explicit room join"""
+    user_id = data.get('user_id')
+    if user_id:
+        join_room(f'user_{user_id}')
+        logger.info(f"User {user_id} joined room")
+
+@socketio.on('leave')
+def handle_leave(data):
+    """Handle explicit room leave"""
+    user_id = data.get('user_id')
+    if user_id:
+        leave_room(f'user_{user_id}')
+        logger.info(f"User {user_id} left room")
+
+# Graceful shutdown
+@app.teardown_appcontext
+def shutdown_workers(exception):
+    """Stop all background workers on app shutdown"""
+    for user_id, worker in background_workers.items():
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(worker.stop())
+        except Exception as e:
+            logger.error(f"Error stopping worker for {user_id}: {e}")
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
     debug_mode = os.getenv('FLASK_ENV', 'production') == 'development'
-    app.run(host='0.0.0.0', port=port, debug=debug_mode)
+    # Use socketio.run instead of app.run for WebSocket support
+    socketio.run(app, host='0.0.0.0', port=port, debug=debug_mode, allow_unsafe_werkzeug=True)
