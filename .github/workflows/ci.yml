@@ -40,10 +40,11 @@ jobs:
       continue-on-error: true
       run: |
         cd backend
-        pytest tests/ -v --cov=services --cov=routes --cov-report=term-missing --cov-report=xml
+        pytest tests/ -v --cov=services --cov=routes --cov-report=term-missing --cov-report=xml --cov-fail-under=80
       env:
         FLASK_ENV: testing
-        GOOGLE_API_KEY: test_key
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
 
     - name: Upload backend coverage to Codecov
       uses: codecov/codecov-action@v3
@@ -64,7 +65,7 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: package-lock.json
+        cache-dependency-path: './frontend/package-lock.json'
 
     - name: Install dependencies
       run: |
@@ -126,7 +127,7 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: package-lock.json
+        cache-dependency-path: './frontend/package-lock.json'
 
     - name: Install dependencies
       run: |
@@ -136,7 +137,7 @@ jobs:
     - name: Run ESLint
       run: |
         cd frontend
-        npm run build 2>&1 | grep -E "(warning|error)" || echo "No lint issues found"
+        npx eslint src --ext .ts,.tsx --max-warnings 10 || true
 
   type-check:
     name: TypeScript Type Check
@@ -150,7 +151,7 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: package-lock.json
+        cache-dependency-path: './frontend/package-lock.json'
 
     - name: Install dependencies
       run: |

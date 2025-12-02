@@ -14,6 +14,9 @@ const OfflineBanner: React.FC = () => {
   const [showOfflineAlert, setShowOfflineAlert] = useState(false);
   const [showOnlineAlert, setShowOnlineAlert] = useState(false);
 
+  // Log online status for debugging
+  console.debug('OfflineBanner: isOnline =', isOnline);
+
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
