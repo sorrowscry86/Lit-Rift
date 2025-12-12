@@ -63,9 +63,8 @@ def check_firestore_status():
         start_time = time.time()
         
         # Try a simple read operation to test connectivity
-        # Use a health check collection that doesn't impact user data
+        # Use a read-only operation to avoid consuming write quota
         test_ref = db.collection('_health_check').document('test')
-        test_ref.set({'timestamp': datetime.utcnow().isoformat()}, merge=True)
         test_ref.get()
         
         response_time = (time.time() - start_time) * 1000  # Convert to ms
@@ -221,9 +220,10 @@ def detailed_health():
         check_socketio_status()
         
         # Environment information (don't expose sensitive data)
+        import sys
         env_info = {
             'flask_env': os.getenv('FLASK_ENV', 'not set'),
-            'python_version': os.sys.version,
+            'python_version': sys.version,
             'has_google_api_key': bool(os.getenv('GOOGLE_API_KEY')),
             'has_firebase_config': bool(os.getenv('FIREBASE_CONFIG')),
             'has_google_cloud_project': bool(os.getenv('GOOGLE_CLOUD_PROJECT')),

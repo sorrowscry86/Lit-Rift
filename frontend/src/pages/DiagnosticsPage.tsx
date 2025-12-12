@@ -64,7 +64,11 @@ const DiagnosticsPage: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const apiUrl = process.env.REACT_APP_API_URL;
+      if (!apiUrl) {
+        throw new Error('API URL not configured. Please set REACT_APP_API_URL environment variable.');
+      }
+      
       const response = await fetch(`${apiUrl}/api/diagnostics/health`);
       
       if (!response.ok) {
@@ -212,8 +216,11 @@ const DiagnosticsPage: React.FC = () => {
               Last updated: {lastUpdate.toLocaleTimeString()}
             </Typography>
             <Chip
-              icon={getStatusIcon(healthData.status).type === CheckCircleIcon ? <CheckCircleIcon /> : 
-                    getStatusIcon(healthData.status).type === WarningIcon ? <WarningIcon /> : <ErrorIcon />}
+              icon={
+                healthData.status === 'healthy' ? <CheckCircleIcon /> :
+                healthData.status === 'degraded' ? <WarningIcon /> :
+                <ErrorIcon />
+              }
               label={`Overall Status: ${healthData.status.toUpperCase()}`}
               color={getStatusColor(healthData.status) as any}
               sx={{ fontWeight: 'bold' }}
