@@ -45,6 +45,7 @@ Lit-Rift is a comprehensive web application designed to help authors create, man
 - **Centralized Logging** - Structured error logging with context
 - **User Context** - Errors associated with user sessions
 - **Performance Monitoring** - Track slow page loads and bottlenecks
+- **System Diagnostics Dashboard** - Real-time monitoring of backend services with health checks
 
 ### 🧪 Testing & Quality
 - **Unit Tests** - Jest + React Testing Library
@@ -351,6 +352,7 @@ service cloud.firestore {
 
 ## 📚 Additional Documentation
 
+- [DIAGNOSTICS_GUIDE.md](DIAGNOSTICS_GUIDE.md) - System diagnostics dashboard and monitoring
 - [TESTING_GUIDE.md](frontend/TESTING_GUIDE.md) - Testing best practices and examples
 - [ACCESSIBILITY_GUIDE.md](frontend/ACCESSIBILITY_GUIDE.md) - WCAG compliance and a11y features
 - [SENTRY_SETUP.md](frontend/SENTRY_SETUP.md) - Error tracking configuration
