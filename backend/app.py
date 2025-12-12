@@ -141,7 +141,7 @@ except Exception as e:
 # Most routes import 'app' to get 'db', or expect services to have it.
 # We need to make sure services handle db being None.
 
-from routes import story_bible, editor, visual_planning, continuity, inspiration, assets, export_routes, auth, sync
+from routes import story_bible, editor, visual_planning, continuity, inspiration, assets, export_routes, auth, sync, health
 
 # Register blueprints
 app.register_blueprint(auth.bp, url_prefix='/api/auth')
@@ -153,6 +153,7 @@ app.register_blueprint(inspiration.bp, url_prefix='/api/inspiration')
 app.register_blueprint(assets.bp, url_prefix='/api/assets')
 app.register_blueprint(export_routes.bp, url_prefix='/api/export')
 app.register_blueprint(sync.bp, url_prefix='/api/sync')
+app.register_blueprint(health.health_bp, url_prefix='/api/diagnostics')
 
 @app.after_request
 def set_security_headers(response):

@@ -30,6 +30,7 @@ const StoryBiblePage = lazy(() => import('./pages/StoryBiblePage'));
 const VisualPlanningPage = lazy(() => import('./pages/VisualPlanningPage').then(module => ({ default: module.VisualPlanningPage })));
 const ContinuityPage = lazy(() => import('./pages/ContinuityPage').then(module => ({ default: module.ContinuityPage })));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const DiagnosticsPage = lazy(() => import('./pages/DiagnosticsPage'));
 
 function App() {
   const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
@@ -110,6 +111,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <SettingsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/diagnostics"
+                  element={
+                    <ProtectedRoute>
+                      <DiagnosticsPage />
                     </ProtectedRoute>
                   }
                 />
