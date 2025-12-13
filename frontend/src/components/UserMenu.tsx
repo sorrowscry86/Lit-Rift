@@ -16,6 +16,7 @@ import {
   Settings,
   Brightness4,
   Brightness7,
+  BugReport,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -56,6 +57,11 @@ export default function UserMenu() {
   const handleProfile = () => {
     handleMenuClose();
     navigate('/settings');
+  };
+
+  const handleDiagnostics = () => {
+    handleMenuClose();
+    navigate('/diagnostics');
   };
 
   if (!currentUser) {
@@ -118,6 +124,14 @@ export default function UserMenu() {
             <Settings fontSize="small" />
           </ListItemIcon>
           <ListItemText>Settings</ListItemText>
+        </MenuItem>
+
+        {/* Diagnostics */}
+        <MenuItem onClick={handleDiagnostics}>
+          <ListItemIcon>
+            <BugReport fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>System Diagnostics</ListItemText>
         </MenuItem>
 
         {/* Theme toggle */}
